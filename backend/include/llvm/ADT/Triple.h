@@ -87,7 +87,8 @@ public:
     shave,      // SHAVE: Movidius vector VLIW processors
     wasm32,     // WebAssembly with 32-bit pointers
     wasm64,     // WebAssembly with 64-bit pointers
-    cxcpu,	// CX-CPU : user-defined processor
+    cxcpu,	// CX-CPU : user-defined processor, big endian
+    cxcpuel,    // CX-CPU : for little endian
     LastArchType = cxcpu
   };
   enum SubArchType {
