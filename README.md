@@ -16,8 +16,8 @@ Records the steps how to modify llvm source files, for the purpose that enable t
 # Instructions
 ## selection 
 [Referenced Website: MIPS@32 ISA](https://www.mips.com/products/architectures/mips32-2/, "MIPS32 Instruction Set Quick Reference v1.01")
-![avatar](https://github.com/ilo5u/CX-CPU/tree/master/pics/INS_1.png)
-![avatar](https://github.com/ilo5u/CX-CPU/tree/master/pics/INS_2.png)
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/INS_1.png)
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/INS_2.png)
 
 # Micro-Architecture Design
 
