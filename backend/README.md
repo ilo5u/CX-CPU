@@ -9,3 +9,14 @@ set(LLVM_ALL_TARGETS
   ...
   CXCPU
   )
+
+# /include/llvm/ADT/Triple.h
+class Triple {
+public:
+  enum ArchType {
+    ...
+    cxcpu,
+    LastArchType = cxcpu
+  };
+  ...
+};
