@@ -1,6 +1,5 @@
 # Preface
-referenced sheet: Chen Chung-Shu.TutorialLLVMBackend,Release 3.9.1,2018
-[referenced website](http://jonathan2251.github.io/lbd/doc.html#generale-cpu0-document)
+referenced sheet: [Chen Chung-Shu.TutorialLLVMBackend,Release 3.9.1,2018](http://jonathan2251.github.io/lbd/doc.html#generale-cpu0-document)
 
 # cmake/config-ix.cmake
 Add 'CXCPU' as the identity of new processor.
