@@ -1,4 +1,10 @@
-# CMakeLists.txt
+# /cmake/config-ix.cmake
+...
+elseif(LLVM_NATIVE_ARCH MATHCES "cxcpu")
+  set(LLVM_NATIVE_ARCH CXCPU)
+...
+
+# /CMakeLists.txt
 set(LLVM_ALL_TARGETS
   ...
   CXCPU
