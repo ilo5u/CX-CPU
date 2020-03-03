@@ -89,7 +89,7 @@ public:
     wasm64,     // WebAssembly with 64-bit pointers
     cxcpu,	// CX-CPU : user-defined processor, big endian
     cxcpuel,    // CX-CPU : for little endian
-    LastArchType = cxcpu
+    LastArchType = cxcpuel
   };
   enum SubArchType {
     NoSubArch,
