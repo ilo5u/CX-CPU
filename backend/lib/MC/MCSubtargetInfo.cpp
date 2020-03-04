@@ -99,7 +99,7 @@ const MCSchedModel &MCSubtargetInfo::getSchedModelForCPU(StringRef CPU) const {
     std::lower_bound(ProcSchedModels, ProcSchedModels+NumProcs, CPU);
   if (Found == ProcSchedModels+NumProcs || StringRef(Found->Key) != CPU) {
     if (CPU != "help") // Don't error if the user asked for help.
-#if 1 // Disable recognized processor message. For CXCPU
+#if 1 // Disable unrecognized processor message about CX-CPU.
   if (TargetTriple.getArch() != llvm::Triple::cxcpu &&
       TargetTriple.getArch() != llvm::Triple::cxcpuel)
 #endif
