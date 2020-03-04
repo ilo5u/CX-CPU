@@ -1,5 +1,5 @@
 # Preface
-referenced sheet: [Chen Chung-Shu.TutorialLLVMBackend,Release 3.9.1,2018](http://jonathan2251.github.io/lbd/doc.html#generale-cpu0-document)
+[Referenced sheet: Chen Chung-Shu.TutorialLLVMBackend,Release 3.9.1,2018](http://jonathan2251.github.io/lbd/doc.html#generale-cpu0-document)
 # Modified Files
 ## cmake/config-ix.cmake
 Add 'CXCPU' as the identity of new processor.
@@ -129,6 +129,18 @@ SubtargetFeatures::getFeatureBits(StringRef CPU,
       errs() << "'" << CPU
              << "' is not a recognized processor for this target"
              << " (ignoring processor)\n";
+}
+```
+
+## lib/Object/ELF.cpp
+```cpp
+StringRef getELFRelocationTypeName(uint32_t Machine, uint32_t Type) {
+  case ELF::EM_CXCPU:
+    switch (Type) {
+#include "llvm/Support/ELFRelocs/CXCPU.def"
+    default:
+      break;
+    }
 }
 ```
 
