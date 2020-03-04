@@ -28,12 +28,12 @@ static FeatureBitset getFeatures(StringRef CPU, StringRef FS,
 bool CXCPUDisableUnrecognizedMessage = false;
 
 void MCSubtargetInfo::InitMCProcessorInfo(StringRef CPU, StringRef FS) {
-  FeatureBits = getFeatures(CPU, FS, ProcDesc, ProcFeatures);
 #if 1 // Disable unrecognized processor message about CX-CPU.
   if (TargetTriple.getArch() == llvm::Triple::cxcpu ||
       TargetTriple.getArch() == llvm::Triple::cxcpuel)
     CXCPUDisableUnrecognizedMessage = true;
 #endif
+	FeatureBits = getFeatures(CPU, FS, ProcDesc, ProcFeatures);
 
   if (!CPU.empty())
     CPUSchedModel = &getSchedModelForCPU(CPU);
@@ -83,7 +83,6 @@ FeatureBitset MCSubtargetInfo::ApplyFeatureFlag(StringRef FS) {
   return FeatureBits;
 }
 
-// Modified with CX-CPU
 const MCSchedModel &MCSubtargetInfo::getSchedModelForCPU(StringRef CPU) const {
     assert(ProcSchedModels && "Processor machine model not available!");
 

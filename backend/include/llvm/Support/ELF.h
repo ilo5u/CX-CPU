@@ -309,7 +309,8 @@ enum {
   EM_COOL          = 217, // iCelero CoolEngine
   EM_NORC          = 218, // Nanoradio Optimized RISC
   EM_CSR_KALIMBA   = 219, // CSR Kalimba architecture family
-  EM_AMDGPU        = 224  // AMD GPU architecture
+  EM_AMDGPU        = 224, // AMD GPU architecture
+  EM_CXCPU         = 236  // CX CPU architecture 
 };
 
 // Object file classes.
@@ -365,9 +366,23 @@ enum {
 #include "ELFRelocs/i386.def"
 };
 
+
 // ELF Relocation types for PPC32
 enum {
 #include "ELFRelocs/PowerPC.def"
+};
+
+// Specific e_flags for CXCPU
+enum {
+  EF_CXCPU_NOREORDER = 0x00000001; // Don't reorder instructions
+  EF_CXCPU_PIC       = 0x00000002; // Position independent code
+  EF_CXCPU_ARCH_32   = 0x50000000; // CXCPU32 instruction set per linux not elf.h
+  EF_CXCPU_ARCH      = 0xf0000000; // Mask for applying EF_CXCPU_ARCH_ variant
+};
+
+// ELF Relocation types for CXCPU
+enum {
+#include "ELFRelocs/CXCPU.def"
 };
 
 // Specific e_flags for PPC64
