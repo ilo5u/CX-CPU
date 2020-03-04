@@ -1,13 +1,13 @@
 # Forward
-This is the part about how to design the llvm backend.
+This is the part about how to design the llvm backend.<br>
 [Referenced sheet: Chen Chung-Shu.TutorialLLVMBackend,Release 3.9.1,2018](http://jonathan2251.github.io/lbd/doc.html#generale-cpu0-document)
 # Modified Files
-Development tools: ```Cent OS 7``` ```LLVM 3.7``` ```VIM``` ```CTags```
-Since CX-CPU used the subset of MIPS32 instructions and extend a couple of user-defined instructions, the most part of modification works can reference to the existed models, especially how mips has done.
+Development tools: ```Cent OS 7``` ```LLVM 3.7``` ```VIM``` ```CTags```<br>
+Since CX-CPU used the subset of MIPS32 instructions and extend a couple of user-defined instructions, the most part of modification works can reference to the existed models, especially how mips has done.<br>
 The following parts would show the steps based on the referenced sheet.
 ## Backend Machine ID and Relocation Records 
 ### cmake/config-ix.cmake
-Add 'CXCPU' as the identity of new processor.
+Add 'CXCPU' as the identity of new processor.<br>
 Relatively, 'cxcpu' would be used as a parameter when compile c source files.
 ```cpp
 elseif(LLVM_NATIVE_ARCH MATHCES "cxcpu")
