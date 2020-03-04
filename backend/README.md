@@ -68,7 +68,6 @@ enum {
 #include "ELFRelocs/CXCPU.def"
 };
 ```
-
 ## lib/MC/MCSubtargetInfo.cpp
 Add flag to disable the unrecognized message about CX-CPU.
 ```cpp
@@ -93,7 +92,6 @@ const MCSchedModel &MCSubtargetInfo::getSchedModelForCPU(StringRef CPU) const {
              << " (ignoring processor)\n";
 }
 ```
-
 ## lib/MC/SubtargetFeature.cpp
 Disable the unrecognized message about CX-CPU.
 ```cpp
@@ -131,7 +129,6 @@ SubtargetFeatures::getFeatureBits(StringRef CPU,
              << " (ignoring processor)\n";
 }
 ```
-
 ## lib/Object/ELF.cpp
 ```cpp
 StringRef getELFRelocationTypeName(uint32_t Machine, uint32_t Type) {
@@ -143,4 +140,93 @@ StringRef getELFRelocationTypeName(uint32_t Machine, uint32_t Type) {
     }
 }
 ```
+## include/llvm/Support/ELFRelocs/CXCPU.def
+This definition file can reference to 'Mips.def'.
+```cpp
+#ifndef ELF_RELOC
+#error "ELF_RELOC must be defined"
+#endif
 
+ELF_RELOC(R_CXCPU_NONE,                0)
+ELF_RELOC(R_CXCPU_32,                  2)
+ELF_RELOC(R_CXCPU_HI16,                5)
+ELF_RELOC(R_CXCPU_LO16,                6)
+ELF_RELOC(R_CXCPU_GPREL16,             7)
+ELF_RELOC(R_CXCPU_LITERAL,             8)
+ELF_RELOC(R_CXCPU_GOT16,               9)
+ELF_RELOC(R_CXCPU_PC16,               10)
+ELF_RELOC(R_CXCPU_CALL16,             11)
+ELF_RELOC(R_CXCPU_GPREL32,            12)
+ELF_RELOC(R_CXCPU_PC24,               13)
+ELF_RELOC(R_CXCPU_GOT_HI16,           22)
+ELF_RELOC(R_CXCPU_GOT_LO16,           23)
+ELF_RELOC(R_CXCPU_RELGOT,             36)
+ELF_RELOC(R_CXCPU_TLS_GD,             42)
+ELF_RELOC(R_CXCPU_TLS_LDM,            43)
+ELF_RELOC(R_CXCPU_TLS_DTPREL_HI16,    44)
+ELF_RELOC(R_CXCPU_TLS_DTPREL_LO16,    45)
+ELF_RELOC(R_CXCPU_TLS_GOTTPREL,       46)
+ELF_RELOC(R_CXCPU_TLS_TPREL32,        47)
+ELF_RELOC(R_CXCPU_TLS_TPREL_HI16,     49)
+ELF_RELOC(R_CXCPU_TLS_TPREL_LO16,     50)
+ELF_RELOC(R_CXCPU_GLOB_DAT,           51)
+ELF_RELOC(R_CXCPU_JUMP_SLOT,  
+```
+## lib/Support/Triple.cpp
+The modified strings can reference to mips.
+```cpp
+const char *Triple::getArchTypeName(ArchType Kind) {
+  switch (Kind) {
+  // modified
+  case cxcpu:       return "cxcpu";
+  case cxcpuel:     return "cxcpuel";
+  }
+}
+
+const char *Triple::getArchTypePrefix(ArchType Kind) {
+  switch (Kind) {
+  // modified
+  case cxcpu:
+  case cxcpuel:     return "cxcpu";
+  }
+}
+
+Triple::ArchType Triple::getArchTypeForLLVMName(StringRef Name) {
+    // modified
+    .Case("cxcpu", cxcpu)
+    .Case("cxcpuel", cxcpuel)
+}
+
+static Triple::ArchType parseArch(StringRef ArchName) {
+    // modified, may reference mips
+    .Cases("cxcpu", "cxcpueb", "cxcpuallegrex", Triple::cxcpu)
+    .Cases("cxcpuel", "cxcpuallegrexel", Triple::cxcpuel)
+}
+
+static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
+  switch (T.getArch()) {
+  // modified
+  case Triple::cxcpu:
+  case Triple::cxcpuel:
+    return Triple::ELF;
+  }
+}
+
+static unsigned getArchPointerBitWidth(llvm::Triple::ArchType Arch) {
+  switch (Arch) {
+  // modified
+  case llvm::Triple::cxcpu:
+  case llvm::Triple::cxcpuel:
+    return 32;
+}
+
+Triple Triple::get32BitArchVariant() const {
+  switch (getArch()) {
+  // modified
+  case Triple::cxcpu:
+  case Triple::cxcpuel:
+    // Already 32-bit.
+    break;
+  }
+}
+```
