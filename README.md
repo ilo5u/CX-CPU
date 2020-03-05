@@ -1,11 +1,14 @@
-# Preface
+# Forward
 This is a project about graduation thesis.
 
 ## sys/sys.src
 Include all verilog sources files about constructing a SoC and simulation files on it.
 
 ## backend
-Documents about how to transfer the user-defined isa on llvm backend.
+Include all documents about how to transfer the user-defined ISA on llvm backend.
+
+## pics
+Include all description pictures used in markdown files.
 
 # LLVM
 Records the steps how to modify llvm source files, for the purpose that enable the llvm compiler to compile c language on the new target machine.
@@ -20,5 +23,6 @@ Records the steps how to modify llvm source files, for the purpose that enable t
 ![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/INS_2.png)
 
 # Micro-Architecture Design
+Based on MIPS32 ISA, may choose 5-segments pipeline as the center of the design.
 
 # Outter Devices
