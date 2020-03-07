@@ -20,6 +20,7 @@ Since the LLVM compilation tools support the techniques that by writing compiler
 ## Basic Steps
 1. Create a subclass of the **TargetMachine** class that describes characteristics of my model machine. May copy and modify the existed example of **MIPS**, then start with **CXCPUTargetMachine.cpp** and **CXCPUTargetMachine.h**.
 2. Describe the register set of the model machine. Use *TableGen* to generate code for register definition, register aliases, and register classes from the **CXCPURegisterInfo.td** input file. Besides, write additional code for a subclass of the **CXCPURegisterInfo** class that represents the class register file data used for register allocation and also describes the interactions between registers.
+3. Describe the instruction set of CX-CPU. Use *TableGen* to generate code for target-specific instructions from target-specific versions of **CXCPUInstrFormats.td** and **CXCPUInstrInfo.td**. Besides, write additional code for a subclass of the **CXCPUInstrInfo** class to represent machine instructions supported by the model machine.
 
 # Instructions
 ## selection 
