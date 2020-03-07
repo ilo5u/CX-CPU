@@ -236,3 +236,5 @@ Triple Triple::get32BitArchVariant() const {
 }
 ```
 ## Target Description Files
+Include a target's register set, instruction set, secheduling information for instructions, and calling conventions.
+### CXCPUOther.td
