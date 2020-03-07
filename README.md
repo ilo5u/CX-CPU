@@ -15,7 +15,7 @@ Since the LLVM compilation tools support the techniques that by writing compiler
 
 ## References
 [[1]Chen Chung-Shu.TutorialLLVMBackend,Release 3.9.1,2018](http://jonathan2251.github.io/lbd/)<br>
-[[2]Writing an LLVM Backend,https://llvm.org/docs/WritingAnLLVMBackend.html#introduction](https://llvm.org/docs/WritingAnLLVMBackend.html#introduction)
+[[2]Writing an LLVM Backend,https://llvm.org/docs/WritingAnLLVMBackend.html](https://llvm.org/docs/WritingAnLLVMBackend.html#introduction)
 
 ## Basic Steps
 1. Create a subclass of the **TargetMachine** class that describes characteristics of my model machine. May copy and modify the existed example of **MIPS**, then start with **CXCPUTargetMachine.cpp** and **CXCPUTargetMachine.h**.
