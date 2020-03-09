@@ -35,12 +35,17 @@ Since the LLVM compilation tools support the techniques that by writing compiler
 5. Write code for an assembly printer that converts *LLVM IR* to a *GAS* format for the model machine. To do so, assembly strings to the instructions shuold be defined in **CXCPUInstrInfo.td** and also write code for a subclass of *AsmPrinter* that performs the LLVM-to-assembly conversion and a trivial subclass of **CXCPUAsmInfo**.
 
 # Instructions
-## selection 
+## references 
 [[4]MIPS@32 ISA,MIPS32 Instruction Set Quick Reference v1.01](https://www.mips.com/products/architectures/mips32-2/)
+## selections
 ![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ins1.png)
 ![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ins2.png)
 
 # Micro-Architecture Design
+## develops
+**tool**   ``Vivado 2018.3``<br>
+**lang**   ``Verilog HDL``
+## design
 Based on MIPS32 ISA, may choose 5-segments pipeline as the center of the design.
 
 # Outter Devices
