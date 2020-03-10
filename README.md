@@ -33,11 +33,13 @@ Since the LLVM compilation tools support the techniques that by writing compiler
 ## References
 [[1]] Chen Chung-Shu.TutorialLLVMBackend,Release 3.9.1,2018,http://jonathan2251.github.io/lbd/<br>
 [[2]] Writing an LLVM Backend,https://llvm.org/docs/WritingAnLLVMBackend.html<br>
-[[3]] TableGen,http://llvm.org/docs/TableGen/index.html
+[[3]] TableGen,http://llvm.org/docs/TableGen/index.html<br>
+[[4]] The Design of a Custom 32-bit RISC CPU and LLVM Compiler Backend,http://scholarworks.rit.edu/thesis
 
 [1]: http://jonathan2251.github.io/lbd/
 [2]: https://llvm.org/docs/WritingAnLLVMBackend.html
 [3]: http://llvm.org/docs/TableGen/index.html
+[4]: http://scholarworks.rit.edu/thesis
 
 ## TableGen
 *TableGen* files consist of two key types: *class* and *definitions*, both of which are considered *records*.<sup>[[3]]</sup><font size=4>``Records = Unique Name + List of Values + List of Superclasses``</font><br>
@@ -63,6 +65,57 @@ The power in *TableGen* is to interpret the source files into an internal repres
 
 ## Target Machine
 1. Create a concrete target-specific subclass of ``LLVMTargetMachine`` in ``CXCPUTargetMachine.h`` and ``CXCPUTargetMachine.cpp``. Especially, ``getInstrInfo(); getRegisterInfo(); getFrameInfo(); getDataLayout(); getSubtargetImpl();`` methods must be implemented. 
+
+## Files
+This directory tree is modified by the reference [[4]], Guides I-12.
+```cpp
+--> lib/Target/CXCPU/
+    --- CXCPU.h
+    --- CXCPU.td
+    --- CXCPUAsmPrinter.cpp
+    --- CXCPUCallingConv.td
+    --- CXCPUFrameLowering.cpp
+    --- CXCPUFrameLowering.h
+    --- CXCPUISelDAGToDAG.cpp
+    --- CXCPUISelLowring.cpp
+    --- CXCPUISelLowering.h
+    --- CXCPUInstrFormats.td
+    --- CXCPUInstrInfo.cpp
+    --- CXCPUInstrInfo.h
+    --- CXCPUInstrInfo.td
+    --- CXCPUMCInstLower.cpp
+    --- CXCPUMCInstLower.h
+    --- CXCPUMachineFunctionInfo.cpp
+    --- CXCPUMachineFunctionInfo.h
+    --- CXCPURegisterInfo.cpp
+    --- CXCPURegisterInfo.h
+    --- CXCPUSubtarget.cpp
+    --- CXCPUSubtarget.h
+    --- CXCPUTargetMachine.cpp
+    --- CXCPUTargetMachine.h
+    --- CMakeLists.txt
+------> InstPrinter/
+        --- CXCPUInstPrinter.cpp
+        --- CXCPUInstPrinter.h
+        --- CMakeLists.txt
+        --- LLVMBuild.txt
+    --- LLVMBuild.txt
+------> MCTargetDesc/
+        --- CXCPUAsmBackend.cpp
+        --- CXCPUELFObjectWriter.cpp
+        --- CXCPUFixupKinds.h
+        --- CXCPUMCAsmInfo.cpp
+        --- CXCPUMCAsmInfo.h
+        --- CXCPUMCCodeEmitter.cpp
+        --- CXCPUMCTargetDesc.cpp
+        --- CXCPUMCTargerDesc.h
+        --- CMakeLists.txt
+        --- LLVMBuild.txt
+------> TargetInfo/
+        --- CXCPUTargetInfo.cpp
+        --- CMakeLists.txt
+        --- LLVMBuild.txt
+```
 
 # Instructions
 ## references 
