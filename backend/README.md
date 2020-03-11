@@ -1,28 +1,46 @@
 # Forward
-This is the part about how to design the llvm backend.<br>
+
+This is the part about how to design the llvm backend.
+
 [Referenced sheet: Chen Chung-Shu.TutorialLLVMBackend,Release 3.9.1,2018](http://jonathan2251.github.io/lbd/doc.html#generale-cpu0-document)
+
 # Modified Files
-Development tools: ```Cent OS 7``` ```LLVM 3.7``` ```VIM``` ```CTags```<br>
-Since CX-CPU used the subset of MIPS32 instructions and extend a couple of user-defined instructions, the most part of modification works can reference to the existed models, especially how mips has done.<br>
+
+Development tools: ```Cent OS 7``` ```LLVM 3.7``` ```VIM``` ```CTags```
+
+Since CX-CPU used the subset of MIPS32 instructions and extend a couple of user-defined instructions, the most part of modification works can reference to the existed models, especially how mips has done.
+
 The following parts would show the steps based on the referenced sheet.
-## Backend Machine ID and Relocation Records 
+
+## Backend Machine ID and Relocation Records
+
 ### cmake/config-ix.cmake
-Add 'CXCPU' as the identity of new processor.<br>
+
+Add 'CXCPU' as the identity of new processor.
+
 Relatively, 'cxcpu' would be used as a parameter when compile c source files.
+
 ```cpp
 elseif(LLVM_NATIVE_ARCH MATHCES "cxcpu")
   set(LLVM_NATIVE_ARCH CXCPU)
 ```
+
 ### CMakeLists.txt
+
 Add 'CXCPU' as the identity of a new target machine.
+
 ```cpp
 set(LLVM_ALL_TARGETS
   CXCPU
   )
 ```
+
 ### include/llvm/ADT/Triple.h
+
 Add the identity of architecture[big/little-endian] about the new target machine.
+
 ```cpp
+
 class Triple {
 public:
   enum ArchType {
@@ -32,8 +50,11 @@ public:
   };
 };
 ```
+
 ### include/llvm/Object/ELFObjectFile.h
+
 Selection of big or little endian model.
+
 ```cpp
 switch(EF.getHeader()->e_ident[ELF:EI_CLASS]){
   case ELF::ELFCLASS32:
@@ -53,11 +74,14 @@ switch(EF.getHeader()->e_machine){
   }
 }
 ```
+
 ### include/llvm/Support/ELF.h
+
 Add e_flags of CX-CPU.
+
 ```cpp
 enum {
-  EM_CXCPU         = 236  // CX CPU architecture 
+  EM_CXCPU         = 236  // CX CPU architecture
 };
 
 // Specific e_flags for CXCPU
@@ -73,8 +97,11 @@ enum {
 #include "ELFRelocs/CXCPU.def"
 };
 ```
+
 ### lib/MC/MCSubtargetInfo.cpp
+
 Add flag to disable the unrecognized message about CX-CPU.
+
 ```cpp
 // Modified with CX-CPU
 bool CXCPUDisableUnrecognizedMessage = false;
@@ -97,8 +124,11 @@ const MCSchedModel &MCSubtargetInfo::getSchedModelForCPU(StringRef CPU) const {
              << " (ignoring processor)\n";
 }
 ```
+
 ### lib/MC/SubtargetFeature.cpp
+
 Disable the unrecognized message about CX-CPU.
+
 ```cpp
 FeatureBitset
 SubtargetFeatures::ToggleFeature(FeatureBitset Bits, StringRef Feature,
@@ -134,7 +164,9 @@ SubtargetFeatures::getFeatureBits(StringRef CPU,
              << " (ignoring processor)\n";
 }
 ```
+
 ### lib/Object/ELF.cpp
+
 ```cpp
 StringRef getELFRelocationTypeName(uint32_t Machine, uint32_t Type) {
   case ELF::EM_CXCPU:
@@ -145,8 +177,11 @@ StringRef getELFRelocationTypeName(uint32_t Machine, uint32_t Type) {
     }
 }
 ```
+
 ### include/llvm/Support/ELFRelocs/CXCPU.def
+
 This definition file can reference to 'Mips.def'.
+
 ```cpp
 #ifndef ELF_RELOC
 #error "ELF_RELOC must be defined"
@@ -177,8 +212,11 @@ ELF_RELOC(R_CXCPU_TLS_TPREL_LO16,     50)
 ELF_RELOC(R_CXCPU_GLOB_DAT,           51)
 ELF_RELOC(R_CXCPU_JUMP_SLOT,  
 ```
+
 ### lib/Support/Triple.cpp
+
 The modified strings can reference to mips.
+
 ```cpp
 const char *Triple::getArchTypeName(ArchType Kind) {
   switch (Kind) {
@@ -235,6 +273,9 @@ Triple Triple::get32BitArchVariant() const {
   }
 }
 ```
+
 ## Target Description Files
+
 Include a target's register set, instruction set, secheduling information for instructions, and calling conventions.
+
 ### CXCPUOther.td
