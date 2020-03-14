@@ -133,7 +133,8 @@ This directory tree is modified by the reference [[4]], Guides I-12.
         --- LLVMBuild.txt
 ```
 
-## Registration
+## Registration and Building
+
 After untar the ``llvm-3.9.0.src.tar.xz``, rename the ``llvm-3.9.0.src`` directory as ``src`` and copy the untared ``cfe-3.9.0.src.tar.xz`` directory, renamed as ``clang``, to ``src/tools``.
 
 When these source files are already prepared, use ``cmake`` to build makefiles and then build the clang and the llvm. You can run a bash like this,
@@ -148,6 +149,11 @@ make -j4 -l4
 ```
 
 After that, you can add ``build/bin`` to ``PATH``, then add all modified source files into ``src``, like ``src/CMakeLists.txt``, ``src/cmake/config-ix.cmake`` and so on. The rebuild the llvm by command ``cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCAMEK_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD=CXCPU -G "Unix Makefiles" ../src/`` and ``make -j4 -l4`` to get the llvm compiler supporting ``CXCPU``.
+
+## Compilation
+We can use clang first transfer the ``*.cpp`` file to ``*.bc`` file, which described by LLVM IR, using command ``clang -target mips-unknown-linux-gnu -c *.cpp -emit-llvm -o *.bc``. You can use ``llvm-dis`` tools to check the ``*.bc`` file by command ``llvm-dis *.bc -o -``. Finally, run command ``llc -march=CXCPU -relocation-model=pic -filetype=asm *.bc -o *.s`` and you will get the assemby description of ``*.cpp`` on the model machine which used the processor ``CXCPU``.
+
+**The parameter after ``-target`` is ``mips-unknown-linux-gnu`` because ``CXCPU`` borrows the ABI from Mips.**
 
 # Instructions
 
