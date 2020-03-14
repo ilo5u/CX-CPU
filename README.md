@@ -18,17 +18,17 @@ Include all description pictures used in markdown files.
 
 1. Download and install ``CentOS 7``.
 2. Download source codes with llvm development tools from ``http://llvm.org/releases/download.html`` and compile manually.
-   1. llvm-3.7.0.src.tar.xz ``e.g. wget http://releases.llvm.org/3.7.0/llvm-3.7.0.src.tar.xz``
+   1. llvm-3.9.0.src.tar.xz ``e.g. wget http://releases.llvm.org/3.9.0/llvm-3.9.0.src.tar.xz``
    2. options
-      1. cfe-3.7.0.src.tar.xz
-      2. clang-tools-extra-3.7.0.src.tar.xz
-      3. libcxx-3.7.0.src.tar.xz
-      4. libcxxabi-3.7.0.src.tar.xz
-      5. libunwind-3.7.0.src.tar.xz
-      6. lld-3.7.0.src.tar.xz
-      7. lldb-3.7.0.src.tar.xz
-      8. openmp-3.7.0.src.tar.xz
-      9. polly-3.7.0.src.tar.xz
+      1. cfe-3.9.0.src.tar.xz
+      2. clang-tools-extra-3.9.0.src.tar.xz
+      3. libcxx-3.9.0.src.tar.xz
+      4. libcxxabi-3.9.0.src.tar.xz
+      5. libunwind-3.9.0.src.tar.xz
+      6. lld-3.9.0.src.tar.xz
+      7. lldb-3.9.0.src.tar.xz
+      8. openmp-3.9.0.src.tar.xz
+      9. polly-3.9.0.src.tar.xz
    3. use ``cmake``, like the normally steps of building, with ``cmake ../`` and ``cmake --build .`` in the building directory.
 3. Download and install ``Vivado 2018.3`` and other ``Xilinx`` design tools, with ``ModelSim`` optionally.
 
@@ -132,6 +132,22 @@ This directory tree is modified by the reference [[4]], Guides I-12.
         --- CMakeLists.txt
         --- LLVMBuild.txt
 ```
+
+## Registration
+After untar the ``llvm-3.9.0.src.tar.xz``, rename the ``llvm-3.9.0.src`` directory as ``src`` and copy the untared ``cfe-3.9.0.src.tar.xz`` directory, renamed as ``clang``, to ``src/tools``.
+
+When these source files are already prepared, use ``cmake`` to build makefiles and then build the clang and the llvm. You can run a bash like this,
+
+```bash
+# in the directory where 'src' is
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCLANG_BUILD_EXAMPLES=ON -DLLVM_BUILD_EXAMPLES=ON -G "Unix Makefiles" ../src/
+# -jn : n based on the number of processes on your computer
+make -j4 -l4
+```
+
+After that, you can add ``build/bin`` to ``PATH``, then add all modified source files into ``src``, like ``src/CMakeLists.txt``, ``src/cmake/config-ix.cmake`` and so on. The rebuild the llvm by command ``cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCAMEK_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD=CXCPU -G "Unix Makefiles" ../src/`` and ``make -j4 -l4`` to get the llvm compiler supporting ``CXCPU``.
 
 # Instructions
 
