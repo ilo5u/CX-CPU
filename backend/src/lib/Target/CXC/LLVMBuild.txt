@@ -1,0 +1,22 @@
+[common]
+subdirectories =
+    MCTargetDesc TargetInfo
+
+[component_0]
+type = TargetGroup
+name = CXC
+parent = Target
+
+[component_1]
+type = Library
+name = CXCCodeGen
+parent = CXC
+required_libraries = 
+    CodeGen Core MC
+    Cpu0Desc
+    Cpu0Info
+    SelectionDAG
+    Support
+    Target
+
+add_to_library_groups = CXC
