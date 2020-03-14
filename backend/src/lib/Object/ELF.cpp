@@ -40,6 +40,15 @@ StringRef getELFRelocationTypeName(uint32_t Machine, uint32_t Type) {
       break;
     }
     break;
+// add CX-CPU identity used for ELF file
+  case ELF::EM_CXC:
+    switch (Type) {
+#include "llvm/Support/ELFRelocs/CXC.def"
+    default:
+      break;
+    }
+    break;
+// end
   case ELF::EM_AARCH64:
     switch (Type) {
 #include "llvm/Support/ELFRelocs/AArch64.def"
