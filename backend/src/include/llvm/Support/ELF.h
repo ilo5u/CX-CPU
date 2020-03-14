@@ -317,6 +317,9 @@ enum {
   // such numbers for an official value for WebAssembly. As soon as one is
   // allocated, this enum will be updated to use it.
   EM_WEBASSEMBLY   = 0x4157, // WebAssembly architecture
+// add CX-CPU identity
+  EM_CXC           = 404
+// end
 };
 
 // Object file classes.
@@ -376,6 +379,23 @@ enum {
 enum {
 #include "ELFRelocs/PowerPC.def"
 };
+
+// add CX-CPU identity
+
+// Specific e_flags for CXC
+enum {
+  EF_CXC_NOREORDER  = 0x00000001, // do not reorder instructions
+  EF_CXC_PIC        = 0x00000002, // position independent code
+  EF_CXC_ARCH_32    = 0x50000000, // CXC32 instruction set per linux not elf.h
+  EF_CXC_ARCH       = 0xf0000000  // mask for applying EF_CXC_ARCH_ variant
+};
+
+// ELF Relocation types for CXC
+enum {
+#include "ELFRelocs/CXC.def"
+};
+
+// end
 
 // Specific e_flags for PPC64
 enum {

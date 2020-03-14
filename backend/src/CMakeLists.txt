@@ -225,6 +225,9 @@ set(LLVM_ALL_TARGETS
   BPF
   Hexagon
   Mips
+# add CX-CPU identity
+  CXC
+# end
   MSP430
   NVPTX
   PowerPC
