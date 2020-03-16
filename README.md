@@ -78,9 +78,54 @@ The power in *TableGen* is to interpret the source files into an internal repres
 3. Create a ``ChinxTargetMachine.cpp`` in ``lib/Target/Chinx``, and implement a sublcass of ``LLVMTargetMachine``.
 4. Run ``cmake`` with ``DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Chinx``.
 
-## Target Machine
+## Registration
 
-1. Create a concrete target-specific subclass of ``LLVMTargetMachine`` in ``ChinxTargetMachine.h`` and ``ChinxTargetMachine.cpp``. Especially, ``getInstrInfo(); getRegisterInfo(); getFrameInfo(); getDataLayout(); getSubtargetImpl();`` methods must be implemented. 
+To register for ``Chinx``, these modified files are the least requirement:
+
+```cpp
+src
+--> cmake
+    --- config-ix.cmake
+--> include
+    --> llvm
+        --> ADT
+            --- Triple.h
+        --> Object
+            --- ELFObjectFile.h
+        --> Support
+            --- ELF.h
+            --> ELFRelocs
+                --- Chinx.def
+--> lib
+    --> MC
+        --- MCSubtargetInfo.cpp
+        --- SubtargetFeature.cpp
+    --> Object
+        --- ELF.cpp
+    --> Support
+        --- Triple.cpp
+    --> Chinx
+        --> MCTargetDesc
+            --- ChinxMCTargetDesc.h
+            --- ChinxMCTargetDesc.cpp
+            --- CMakeLists.txt
+            --- LLVMBuild.txt
+        --> TargetInfo
+            --- ChinxTargetInfo.cpp
+            --- CMakeLists.txt
+            --- LLVMBuild.txt
+        --- Chinx.h
+        --- Chinx.td
+        --- ChinxRegisterInfo.td
+        --- ChinxSchedule.td
+        --- ChinxInstrFormats.td
+        --- ChinxInstrInfo.td
+        --- ChinxTargetMachine.h
+        --- ChinxTargetMachine.cpp
+        --- CMakeLists.txt
+        --- LLVMBuild.txt
+--- CMakeLists.txt
+```
 
 ## Files
 
@@ -135,7 +180,7 @@ This directory tree is modified by the reference [[4]], Guides I-12.
         --- LLVMBuild.txt
 ```
 
-## Registration and Building
+## Building
 
 After untar the ``llvm-3.9.0.src.tar.xz``, rename the ``llvm-3.9.0.src`` directory as ``src`` and copy the untared ``cfe-3.9.0.src.tar.xz`` directory, renamed as ``clang``, to ``src/tools``.
 
