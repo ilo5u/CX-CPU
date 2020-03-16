@@ -8,7 +8,7 @@ This is the part about how to design the llvm backend.
 
 Development tools: ```Cent OS 7``` ```LLVM 3.7``` ```VIM``` ```CTags```
 
-Since CX-CPU used the subset of MIPS32 instructions and extend a couple of user-defined instructions, the most part of modification works can reference to the existed models, especially how mips has done.
+Since Chinx used the subset of MIPS32 instructions and extend a couple of user-defined instructions, the most part of modification works can reference to the existed models, especially how mips has done.
 
 The following parts would show the steps based on the referenced sheet.
 
@@ -77,7 +77,7 @@ switch(EF.getHeader()->e_machine){
 
 ### include/llvm/Support/ELF.h
 
-Add e_flags of CX-CPU.
+Add e_flags of Chinx.
 
 ```cpp
 enum {
@@ -100,14 +100,14 @@ enum {
 
 ### lib/MC/MCSubtargetInfo.cpp
 
-Add flag to disable the unrecognized message about CX-CPU.
+Add flag to disable the unrecognized message about Chinx.
 
 ```cpp
-// Modified with CX-CPU
+// Modified with Chinx
 bool CXCPUDisableUnrecognizedMessage = false;
 
 void MCSubtargetInfo::InitMCProcessorInfo(StringRef CPU, StringRef FS) {
-#if 1 // Disable unrecognized processor message about CX-CPU.
+#if 1 // Disable unrecognized processor message about Chinx.
   if (TargetTriple.getArch() == llvm::Triple::cxcpu ||
       TargetTriple.getArch() == llvm::Triple::cxcpuel)
     CXCPUDisableUnrecognizedMessage = true;
@@ -127,13 +127,13 @@ const MCSchedModel &MCSubtargetInfo::getSchedModelForCPU(StringRef CPU) const {
 
 ### lib/MC/SubtargetFeature.cpp
 
-Disable the unrecognized message about CX-CPU.
+Disable the unrecognized message about Chinx.
 
 ```cpp
 FeatureBitset
 SubtargetFeatures::ToggleFeature(FeatureBitset Bits, StringRef Feature,
                                  ArrayRef<SubtargetFeatureKV> FeatureTable) {
-#if 1 // Do not show unrecognized message about CX-CPU.
+#if 1 // Do not show unrecognized message about Chinx.
     if (!CXCPUDisableUnrecognizedMessage)
 #endif
     errs() << "'" << Feature
@@ -144,7 +144,7 @@ SubtargetFeatures::ToggleFeature(FeatureBitset Bits, StringRef Feature,
 FeatureBitset
 SubtargetFeatures::ApplyFeatureFlag(FeatureBitset Bits, StringRef Feature,
                                     ArrayRef<SubtargetFeatureKV> FeatureTable) {
-#if 1 // Do not show unrecognized message about CX-CPU.
+#if 1 // Do not show unrecognized message about Chinx.
     if (!CXCPUDisableUnrecognizedMessage)
 #endif
     errs() << "'" << Feature
@@ -156,7 +156,7 @@ FeatureBitset
 SubtargetFeatures::getFeatureBits(StringRef CPU,
                                   ArrayRef<SubtargetFeatureKV> CPUTable,
                                   ArrayRef<SubtargetFeatureKV> FeatureTable) {
-#if 1 // Do not show unrecognized message about CX-CPU.
+#if 1 // Do not show unrecognized message about Chinx.
       if (!CXCPUDisableUnrecognizedMessage)
 #endif
       errs() << "'" << CPU
