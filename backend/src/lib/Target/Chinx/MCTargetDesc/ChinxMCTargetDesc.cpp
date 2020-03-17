@@ -1,4 +1,4 @@
-#include "CXCMCTargetDesc.h"
+#include "ChinxMCTargetDesc.h"
 
 #include "llvm/MC/MachineLocation.h"
 #include "llvm/MC/MCELFStreamer.h"
@@ -16,14 +16,14 @@
 using namespace llvm;
 
 #define GET_INSTRINFO_MC_DESC
-#include "CXCGenInstrInfo.inc"
+#include "ChinxGenInstrInfo.inc"
 
 #define GET_SUBTARGETINFO_MC_DESC
-#include "CXCGenSubtargetInfo.inc"
+#include "ChinxGenSubtargetInfo.inc"
 
 #define GET_REGINFO_MC_DESC
-#include "CXCGenRegisterInfo.inc"
+#include "ChinxGenRegisterInfo.inc"
 
-extern "C" void LLVMInitializeCXCTargetMC() {
+extern "C" void LLVMInitializeChinxTargetMC() {
 
 }

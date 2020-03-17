@@ -1,0 +1,28 @@
+set (LLVM_TARGET_DEFINITIONS Chinx.td)
+
+tablegen(LLVM ChinxGenRegisterInfo.inc -gen-register-info)
+tablegen(LLVM ChinxGenInstrInfo.inc -gen-instr-info)
+tablegen(LLVM ChinxGenDAGISel.inc -gen-dag-isel)
+tablegen(LLVM ChinxGenCallingConv.inc -gen-callingconv)
+tablegen(LLVM ChinxGenSubtargetInfo.inc -gen-subtarget)
+tablegen(LLVM ChinxGenMCPseudoLowering.inc -gen-pseudo-lowering)
+
+add_public_tablegen_target(ChinxCommonTableGen)
+
+add_llvm_target(ChinxCodeGen
+        ChinxFrameLowering.cpp
+        ChinxInstrInfo.cpp
+        ChinxISelLowering.cpp
+        ChinxMachineFunction.cpp
+        ChinxRegisterInfo.cpp
+        ChinxSEFrameLowering.cpp
+        ChinxSEInstrInfo.cpp
+        ChinxSEISelLowering.cpp
+        ChinxSERegisterInfo.cpp
+        ChinxSubtarget.cpp
+        ChinxTargetObjectFile.cpp
+        ChinxTargetMachine.cpp
+        )
+
+add_subdirectory(TargetInfo)
+add_subdirectory(MCTargetDesc)

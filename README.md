@@ -198,7 +198,7 @@ make -j4 -l4
 After that, you can add ``build/bin`` to ``PATH``, then add all modified source files into ``src``, like ``src/CMakeLists.txt``, ``src/cmake/config-ix.cmake`` and so on. The rebuild the llvm by command ``cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCAMEK_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD=Chinx -G "Unix Makefiles" ../src/`` and ``make -j4 -l4`` to get the llvm compiler supporting ``Chinx``.
 
 ## Compilation
-We can use clang first transfer the ``*.cpp`` file to ``*.bc`` file, which described by LLVM IR, using command ``clang -target mips-unknown-linux-gnu -c *.cpp -emit-llvm -o *.bc``. You can use ``llvm-dis`` tools to check the ``*.bc`` file by command ``llvm-dis *.bc -o -``. Finally, run command ``llc -march=Chinx -relocation-model=pic -filetype=asm *.bc -o *.s`` and you will get the assemby description of ``*.cpp`` on the model machine which used the processor ``Chinx``.
+We can use clang first transfer the ``*.cpp`` file to ``*.bc`` file, which described by LLVM IR, using command ``clang -target mips-unknown-linux-gnu -c *.cpp -emit-llvm -o *.bc``. You can use ``llvm-dis`` tools to check the ``*.bc`` file by command ``llvm-dis *.bc -o -``. Finally, run command ``llc -march=chinx -relocation-model=pic -filetype=asm *.bc -o *.s`` and you will get the assemby description of ``*.cpp`` on the model machine which used the processor ``Chinx``.
 
 **The parameter after ``-target`` is ``mips-unknown-linux-gnu`` because ``Chinx`` borrows the ABI from Mips.**
 

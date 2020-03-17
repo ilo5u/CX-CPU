@@ -1,8 +1,0 @@
-[component_0]
-type = Library
-name = CXCDesc
-parent = CXC
-required_libraries = MC
-    CXCInfo
-    Support
-add_to_library_groups = CXC
