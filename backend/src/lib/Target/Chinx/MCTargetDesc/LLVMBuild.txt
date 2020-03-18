@@ -3,6 +3,7 @@ type = Library
 name = ChinxDesc
 parent = Chinx
 required_libraries = MC
+    ChinxAsmPrinter
     ChinxInfo
     Support
 add_to_library_groups = Chinx

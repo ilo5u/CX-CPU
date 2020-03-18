@@ -82,6 +82,8 @@ namespace llvm {
   public:
     explicit ChinxTargetLowering(const ChinxTargetMachine &TM,
                                  const ChinxSubtarget &STI);
+    
+    explicit ChinxTargetLowering(ChinxTargetMachine& TM);
 
     static const ChinxTargetLowering *create(const ChinxTargetMachine &TM,
                                              const ChinxSubtarget &STI);

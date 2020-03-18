@@ -1,18 +1,21 @@
 [common]
 subdirectories =
-    MCTargetDesc TargetInfo
+    InstPrinter MCTargetDesc TargetInfo
 
 [component_0]
 type = TargetGroup
 name = Chinx
 parent = Target
+has_asmprinter = 1
 
 [component_1]
 type = Library
 name = ChinxCodeGen
 parent = Chinx
 required_libraries =
+    AsmPrinter
     CodeGen Core MC
+    ChinxAsmPrinter
     ChinxDesc
     ChinxInfo
     SelectionDAG

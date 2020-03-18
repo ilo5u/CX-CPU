@@ -56,7 +56,15 @@ const char *ChinxTargetLowering::getTargetNodeName(unsigned Opcode) const {
 
 ChinxTargetLowering::ChinxTargetLowering(const ChinxTargetMachine &TM,
                                          const ChinxSubtarget &STI)
-  : TargetLowering(TM), Subtarget(STI), ABI(TM.getABI()) {}
+  : TargetLowering(TM), Subtarget(STI), ABI(TM.getABI()) {
+  // set .align 2
+  // it will emit .align 2 later
+  setMinFunctionAlignment(2);
+
+  // must, computeRegisterProperties - once all of the register classes are
+  // added, this allows us to compute derived properties we expose.
+  // computeRegisterProperties();
+}
 
 const ChinxTargetLowering *ChinxTargetLowering::create(const ChinxTargetMachine &TM,
                                                        const ChinxSubtarget &STI) {

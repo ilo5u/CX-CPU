@@ -28,6 +28,10 @@ def : Proc<"chinxII", [FeatureChinxII]>;
 
 def ChinxInstrInfo : InstrInfo;
 
+// Will generate ChinxGenAsmWrite.inc included by ChinxInstrPrinter.cpp,
+// contents as follows,
+// void ChinxInstrPrinter::printInstruction(const MCInst *MI, raw_ostream &O) {...}
+// const char * ChinxInstrPrinter::getRegisterName(unsigned RegNo) {...}
 def Chinx : Target {
     let InstructionSet = ChinxInstrInfo;
 }

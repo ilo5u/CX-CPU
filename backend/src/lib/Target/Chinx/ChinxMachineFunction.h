@@ -29,12 +29,14 @@ namespace llvm {
 class ChinxFunctionInfo : public MachineFunctionInfo {
 public:
   ChinxFunctionInfo(MachineFunction &MF)
-      : MF(MF), VarArgsFrameIndex(0), MaxCallFrameSize(0) {}
+      : MF(MF), VarArgsFrameIndex(0), MaxCallFrameSize(0), EmitNOAT(false) {}
 
   ~ChinxFunctionInfo();
 
   int getVarArgsFrameIndex() const { return VarArgsFrameIndex; }
   void setVarArgsFrameIndex(int Index) { VarArgsFrameIndex = Index; }
+  bool getEmitNOAT() const { return EmitNOAT; }
+  void setEmitNOAT() { EmitNOAT = true; }
 
 private:
   virtual void anchor();
@@ -45,6 +47,7 @@ private:
   int VarArgsFrameIndex;
 
   unsigned MaxCallFrameSize;
+  bool EmitNOAT;
 };
 
 } // end of namespace llvm
