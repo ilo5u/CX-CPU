@@ -15,6 +15,7 @@
 #include "Chinx.h"
 #include "ChinxSubtarget.h"
 #include "ChinxTargetObjectFile.h"
+#include "ChinxSEISelDAGToDAG.h"
 
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/CodeGen/Passes.h"
@@ -146,9 +147,18 @@ public:
   const ChinxSubtarget &getChinxSubtarget() const {
     return *getChinxTargetMachine().getSubtargetImpl();
   }
+
+  bool addInstSelector() override;
 };
+
+// Install an instruction select pass using the ISelDag to gen Chinx code.
+bool ChinxPassConfig::addInstSelector() {
+  addPass(createChinxSEISelDag(getChinxTargetMachine(), getOptLevel()));
+  return false;
+}
 } // namespace
 
 TargetPassConfig *ChinxTargetMachine::createPassConfig(PassManagerBase &PM) {
   return new ChinxPassConfig(this, PM);
 }
+

@@ -60,3 +60,9 @@ class FJ<bits<6> op, dag outs, dag ins, string asmstr, list<dag> pattern, InstrI
         let Opcode = op;
         let Inst{25-0} = addr;
     }
+
+class ChinxPseudo<dag outs, dag ins, string asmstr, list<dag> pattern> :
+    ChinxInst<outs, ins, asmstr, pattern, IIPseudo, Pseudo> {
+        let isCodeGenOnly = 1;
+        let isPseudo = 1;
+    }

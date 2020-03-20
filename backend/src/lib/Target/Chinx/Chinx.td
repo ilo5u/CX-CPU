@@ -11,7 +11,6 @@ def Feature_3 : SubtargetFeature<"fe_3", "HasDummy", "true", "Enable instruction
 def Feature_All : SubtargetFeature<"fe_all", "HasDummy", "true", "Enable instructions.", [
     Feature_1, Feature_2, Feature_3
 ]>;
-
 def FeaturePush : SubtargetFeature<"push", "HasPush", "true", "Enable 'push' instruction.">;
 def FeatureCall : SubtargetFeature<"call", "HasCall", "true", "Enable 'call' instruction.">;
 def FeatureChinxI : SubtargetFeature<"chinxI", "ChinxArchVersion", "ChinxI", "ChinxI ISA Support",

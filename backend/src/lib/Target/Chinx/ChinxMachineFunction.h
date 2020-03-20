@@ -29,22 +29,69 @@ namespace llvm {
 class ChinxFunctionInfo : public MachineFunctionInfo {
 public:
   ChinxFunctionInfo(MachineFunction &MF)
-      : MF(MF), VarArgsFrameIndex(0), MaxCallFrameSize(0), EmitNOAT(false) {}
+      : // MF(MF), 
+      VarArgsFrameIndex(0), 
+      MaxCallFrameSize(0), 
+      EmitNOAT(false) {}
 
   ~ChinxFunctionInfo();
 
+  unsigned getSRetReturnReg() const { return SRetReturnReg; }
+  void setSRetReturnReg(unsigned Reg) { SRetReturnReg = Reg; }
+
   int getVarArgsFrameIndex() const { return VarArgsFrameIndex; }
   void setVarArgsFrameIndex(int Index) { VarArgsFrameIndex = Index; }
+
+  bool hasByvalArg() const { return HasByvalArg; }
+  void setFormalArgInfo(unsigned Size, bool HasByval) {
+    IncomingArgSize = Size;
+    HasByvalArg = HasByval;
+  }
+
+  unsigned getIncomingArgSize() const { return IncomingArgSize; }
+
+  bool callsEhReturn() const { return CallsEhReturn; }
+  void setCallsEhReturn() { CallsEhReturn = true; }
+
+  bool callsEhDwarf() const { return CallsEhDwarf; }
+  void setCallsEhDwarf() { CallsEhDwarf = true; }
+
+  void createEhDataRegsFI();
+  int getEhDataRegFI(unsigned Reg) const { return EhDataRegFI[Reg]; }
+
+  unsigned getMaxCallFrameSize() const { return MaxCallFrameSize; }
+  void setMaxCallFrameSize(unsigned S) { MaxCallFrameSize = S; }
+
   bool getEmitNOAT() const { return EmitNOAT; }
   void setEmitNOAT() { EmitNOAT = true; }
 
 private:
   virtual void anchor();
 
-  MachineFunction& MF;
+  // MachineFunction& MF;
 
-  /// VarArgsFrameIndex - FrameIndex for start of varargs area.
+  /// SRetReturnReg - Some subtargets require that sret lowering includes
+  /// returning the value of the returned struct in a register. This field
+  /// holds the virtual register into which the sret argument is passed.
+  unsigned SRetReturnReg;
+
+    /// VarArgsFrameIndex - FrameIndex for start of varargs area.
   int VarArgsFrameIndex;
+
+  /// True if function has a byval argument.
+  bool HasByvalArg;
+
+  /// Size of incoming argument area.
+  unsigned IncomingArgSize;
+
+  /// CallsEhReturn - Whether the function calls llvm.eh.return.
+  bool CallsEhReturn;
+
+  /// CallsEhDwarf - Whether the function calls llvm.eh.dwarf.
+  bool CallsEhDwarf;
+
+  /// Frame objects for spilling eh data registers.
+  int EhDataRegFI[4];
 
   unsigned MaxCallFrameSize;
   bool EmitNOAT;
