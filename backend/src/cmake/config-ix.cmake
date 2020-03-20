@@ -380,10 +380,8 @@ elseif (LLVM_NATIVE_ARCH MATCHES "arm")
   set(LLVM_NATIVE_ARCH ARM)
 elseif (LLVM_NATIVE_ARCH MATCHES "mips")
   set(LLVM_NATIVE_ARCH Mips)
-# add CX-CPU identity
-elseif (LLVM_NATIVE_ARCH MATCHES "cxc")
-  set(LLVM_NATIVE_ARCH CXC)
-# end
+elseif (LLVM_NATIVE_ARCH MATCHES "chinx")
+  set(LLVM_NATIVE_ARCH Chinx)
 elseif (LLVM_NATIVE_ARCH MATCHES "xcore")
   set(LLVM_NATIVE_ARCH XCore)
 elseif (LLVM_NATIVE_ARCH MATCHES "msp430")

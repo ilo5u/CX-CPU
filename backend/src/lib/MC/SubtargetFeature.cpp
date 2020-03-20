@@ -161,10 +161,7 @@ void ClearImpliedBits(FeatureBitset &Bits,
   }
 }
 
-// disable message
-extern bool CXCDisableUnrecognizedMessage;
-// end
-
+extern bool ChinxDisableUnrecognizedMessage;
 /// ToggleFeature - Toggle a feature and update the feature bits.
 void
 SubtargetFeatures::ToggleFeature(FeatureBitset &Bits, StringRef Feature,
@@ -186,9 +183,7 @@ SubtargetFeatures::ToggleFeature(FeatureBitset &Bits, StringRef Feature,
       SetImpliedBits(Bits, FeatureEntry, FeatureTable);
     }
   } else {
-    // disable message
-    if (!CXCDisableUnrecognizedMessage)
-    // end
+    if (!ChinxDisableUnrecognizedMessage)
     errs() << "'" << Feature
            << "' is not a recognized feature for this target"
            << " (ignoring feature)\n";
@@ -218,9 +213,7 @@ void SubtargetFeatures::ApplyFeatureFlag(FeatureBitset &Bits, StringRef Feature,
       ClearImpliedBits(Bits, FeatureEntry, FeatureTable);
     }
   } else {
-    // disable message
-    if (!CXCDisableUnrecognizedMessage)
-    // end
+    if (!ChinxDisableUnrecognizedMessage)
     errs() << "'" << Feature
            << "' is not a recognized feature for this target"
            << " (ignoring feature)\n";
@@ -266,9 +259,7 @@ SubtargetFeatures::getFeatureBits(StringRef CPU,
           SetImpliedBits(Bits, &FE, FeatureTable);
       }
     } else {
-      // disable message
-      if (!CXCDisableUnrecognizedMessage)
-      // end
+      if (!ChinxDisableUnrecognizedMessage)
       errs() << "'" << CPU
              << "' is not a recognized processor for this target"
              << " (ignoring processor)\n";

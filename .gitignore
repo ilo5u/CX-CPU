@@ -1,5 +1,7 @@
+/sys/.Xil
 /sys/sys.cache
 /sys/sys.hw
 /sys/sys.ip_user_files
 /sys/sys.sim
+/sys/*.txt
 *.xpr

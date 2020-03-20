@@ -852,10 +852,8 @@ StringRef ELFObjectFile<ELFT>::getFileFormatName() const {
       return "ELF32-lanai";
     case ELF::EM_MIPS:
       return "ELF32-mips";
-// add CX-CPU identity used for ELF file
-    case ELF::EM_CXC:
-      return "ELF32-cxc";
-// end
+    case ELF::EM_CHINX:
+      return "ELF32-chinx";
     case ELF::EM_PPC:
       return "ELF32-ppc";
     case ELF::EM_SPARC:
@@ -929,10 +927,13 @@ unsigned ELFObjectFile<ELFT>::getArch() const {
     default:
       report_fatal_error("Invalid ELFCLASS!");
     }
-// add CX-CPU identity used for ELF file
-  case ELF::EM_CXC:
-    return Triple::cxc;
-// end
+  case ELF::EM_CHINX:
+    switch (EF.getHeader()->e_ident[ELF::EI_CLASS]) {
+    case ELF::ELFCLASS32:
+      return IsLittleEndian ? Triple::chinxel : Triple::chinx;
+    default:
+      report_fatal_error("Invalid ELFCLASS!");
+    }
   case ELF::EM_PPC:
     return Triple::ppc;
   case ELF::EM_PPC64:

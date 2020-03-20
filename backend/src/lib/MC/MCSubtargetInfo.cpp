@@ -24,12 +24,11 @@ static FeatureBitset getFeatures(StringRef CPU, StringRef FS,
   return Features.getFeatureBits(CPU, ProcDesc, ProcFeatures);
 }
 
-// disable the unrecognized message
-bool CXCDisableUnrecognizedMessage = false;
+bool ChinxDisableUnrecognizedMessage = false;
 void MCSubtargetInfo::InitMCProcessorInfo(StringRef CPU, StringRef FS) {
-  if (TargetTriple.getArch() == llvm::Triple::cxc)
-    CXCDisableUnrecognizedMessage = true;
-// end
+  if (TargetTriple.getArch() == llvm::Triple::chinx
+          || TargetTriple.getArch() == llvm::Triple::chinxel)
+    ChinxDisableUnrecognizedMessage = true;
   FeatureBits = getFeatures(CPU, FS, ProcDesc, ProcFeatures);
   if (!CPU.empty())
     CPUSchedModel = &getSchedModelForCPU(CPU);
@@ -93,9 +92,8 @@ const MCSchedModel &MCSubtargetInfo::getSchedModelForCPU(StringRef CPU) const {
     std::lower_bound(SchedModels.begin(), SchedModels.end(), CPU);
   if (Found == SchedModels.end() || StringRef(Found->Key) != CPU) {
     if (CPU != "help") // Don't error if the user asked for help.
-// disable message
-      if (TargetTriple.getArch() != llvm::Triple::cxc)
-// end
+      if (TargetTriple.getArch() != llvm::Triple::chinx
+              && TargetTriple.getArch() != llvm::Triple ::chinxel)
       errs() << "'" << CPU
              << "' is not a recognized processor for this target"
              << " (ignoring processor)\n";
