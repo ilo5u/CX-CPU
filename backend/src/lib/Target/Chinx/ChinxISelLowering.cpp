@@ -38,6 +38,26 @@ using namespace llvm;
 
 #define DEBUG_TYPE "chinx-lower"
 
+ChinxTargetLowering::ChinxTargetLowering(const ChinxTargetMachine &TM,
+                                         const ChinxSubtarget &ST)
+  : TargetLowering(TM), Subtarget(ST), ABI(TM.getABI()) {
+  // set .align 2
+  // it will emit .align 2 later
+  setMinFunctionAlignment(2);
+
+  // Set up the register classes
+  addRegisterClass(MVT::i32, &Chinx::CPURegsRegClass);
+
+  // must, computeRegisterProperties - Once all of the register classes are
+  // added, this allow us to compute derived properties we expose.
+  computeRegisterProperties(Subtarget.getRegisterInfo());
+}
+
+const ChinxTargetLowering *ChinxTargetLowering::create(const ChinxTargetMachine &TM,
+                                                       const ChinxSubtarget &ST) {
+  return new ChinxTargetLowering{TM, ST};
+}
+
 const char *ChinxTargetLowering::getTargetNodeName(unsigned Opcode) const {
   switch ((ChinxISD::NodeType)Opcode) {
   case ChinxISD::JmpLink:           return "ChinxISD::JmpLink";
@@ -53,23 +73,6 @@ const char *ChinxTargetLowering::getTargetNodeName(unsigned Opcode) const {
   case ChinxISD::Wrapper:           return "ChinxISD::Wrapper";
   }
   return nullptr;
-}
-
-ChinxTargetLowering::ChinxTargetLowering(const ChinxTargetMachine &TM,
-                                         const ChinxSubtarget &STI)
-  : TargetLowering(TM), Subtarget(STI), ABI(TM.getABI()) {
-  // set .align 2
-  // it will emit .align 2 later
-  setMinFunctionAlignment(2);
-
-  // must, computeRegisterProperties - once all of the register classes are
-  // added, this allows us to compute derived properties we expose.
-  // computeRegisterProperties();
-}
-
-const ChinxTargetLowering *ChinxTargetLowering::create(const ChinxTargetMachine &TM,
-                                                       const ChinxSubtarget &STI) {
-  return llvm::createChinxSETargetLowering(TM, STI);
 }
 
 #include "ChinxGenCallingConv.inc"
@@ -206,7 +209,5 @@ unsigned ChinxTargetLowering::ChinxCC::reservedArgArea() const {
 MVT ChinxTargetLowering::ChinxCC::getRegVT(MVT VT, const Type *OrigTy,
                                          const SDNode *CallNode,
                                          bool IsSoftFloat) const {
-  // if (IsSoftFloat || IsO32)
-  //   return VT;
   return VT;
 }

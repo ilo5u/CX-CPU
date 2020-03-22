@@ -15,7 +15,6 @@
 #include "Chinx.h"
 #include "ChinxMachineFunction.h"
 #include "ChinxRegisterInfo.h"
-#include "ChinxSEISelDAGToDAG.h"
 #include "ChinxTargetMachine.h"
 
 #include "llvm/CodeGen/MachineConstantPool.h"
@@ -48,6 +47,7 @@ using namespace llvm;
 //===----------------------------------------------------------------------===//
 
 bool ChinxDAGToDAGISel::runOnMachineFunction(MachineFunction &MF) {
+  Subtarget = &static_cast<const ChinxSubtarget &>(MF.getSubtarget());
   bool Ret = SelectionDAGISel::runOnMachineFunction(MF);
   return Ret;
 }
@@ -104,23 +104,30 @@ void ChinxDAGToDAGISel::Select(SDNode *Node) {
 
   switch(Opcode) {
   default: break;
-
-  // Get target GOT address.
-//   case ISD::GLOBAL_OFFSET_TABLE:
-//     ReplaceNode(Node, getGlobalBaseReg());
-//     return;
-
-// #ifndef NDEBUG
-//   case ISD::LOAD:
-//   case ISD::STORE:
-//     assert((Subtarget->systemSupportsUnalignedAccess() ||
-//             cast<MemSDNode>(Node)->getMemoryVT().getSizeInBits() / 8 <=
-//             cast<MemSDNode>(Node)->getAlignment()) &&
-//            "Unexpected unaligned loads/stores.");
-//     break;
-// #endif
    }
 
   // Select the default instruction
   SelectCode(Node);
+}
+
+bool ChinxDAGToDAGISel::trySelect(SDNode *Node) {
+  unsigned Opcode = Node->getOpcode();
+  SDLoc DL(Node);
+  // EVT NodeTy = Node->getValueType(0);
+  // unsigned MultOpc;
+  ///
+  // Instruction Selection not handled by the auto-generated
+  // tablegen selection should be handled here.
+  ///
+  switch(Opcode) {
+  default: break;
+  }
+  return false;
+}
+
+void ChinxDAGToDAGISel::processFunctionAfterISel(MachineFunction &MF) {}
+
+FunctionPass *llvm::createChinxISelDag(ChinxTargetMachine &TM,
+                                         CodeGenOpt::Level OptLevel) {
+  return new ChinxDAGToDAGISel(TM, OptLevel);
 }

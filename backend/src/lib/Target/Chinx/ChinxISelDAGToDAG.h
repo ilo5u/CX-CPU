@@ -64,15 +64,20 @@ private:
 
   void Select(SDNode *N) override;
 
-  virtual bool trySelect(SDNode *Node) = 0;
+  bool trySelect(SDNode *Node);
 
   // getImm - Return a target constant with the specified value.
   inline SDValue getImm(const SDNode *Node, uint64_t Imm) {
     return CurDAG->getTargetConstant(Imm, SDLoc(Node), Node->getValueType(0));
   }
 
-  virtual void processFunctionAfterISel(MachineFunction &MF) = 0;
-};
-}
+  void processFunctionAfterISel(MachineFunction &MF);
 
+  // Insert instructions to initialize the global base register in the
+  // first MBB of the function.
+  // void initGlobalBaseReg(MachineFunction &MF);
+};
+FunctionPass *createChinxISelDag(ChinxTargetMachine &TM,
+                                 CodeGenOpt::Level OptLevel);
+}
 #endif

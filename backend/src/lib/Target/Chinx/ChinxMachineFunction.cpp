@@ -17,8 +17,6 @@
 
 using namespace llvm;
 
-bool FixGlobalBaseReg;
-
 ChinxFunctionInfo::~ChinxFunctionInfo() {}
 
 void ChinxFunctionInfo::anchor() {}

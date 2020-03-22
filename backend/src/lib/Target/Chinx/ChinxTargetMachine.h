@@ -31,7 +31,9 @@ class ChinxTargetMachine : public LLVMTargetMachine {
   std::unique_ptr<TargetLoweringObjectFile> TLOF;
   // Selected ABI
   ChinxABIInfo ABI;
-  ChinxSubtarget DefaultSubtarget;
+
+  // This oject will be used in several files, e.g. ChinxRegisterInfo
+  ChinxSubtarget Subtarget;
 
   mutable StringMap<std::unique_ptr<ChinxSubtarget>> SubtargetMap;
 
@@ -43,7 +45,7 @@ public:
   ~ChinxTargetMachine() override;
 
   const ChinxSubtarget *getSubtargetImpl() const {
-    return &DefaultSubtarget;
+    return &Subtarget;
   }
 
   const ChinxSubtarget *getSubtargetImpl(const Function &F) const override;

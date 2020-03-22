@@ -70,13 +70,11 @@ getReservedRegs(const MachineFunction &MF) const {
 // FrameIndex represent objects inside a abstract stack.
 // We must replace FrameIndex with an stack/frame pointer
 // direct reference.
-void ChinxRegisterInfo::
-eliminateFrameIndex(MachineBasicBlock::iterator II, int SPAdj,
-  unsigned FIOperandNum, RegScavenger *RS) const {
+void ChinxRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
+	int SPAdj, unsigned FIOperandNum, RegScavenger *RS) const {
   MachineInstr &MI = *II;
   MachineFunction &MF = *MI.getParent()->getParent();
   MachineFrameInfo *MFI = MF.getFrameInfo();
-  // ChinxFunctionInfo *ChinxFI = MF.getInfo<ChinxFunctionInfo>();
 
   unsigned i = 0;
   while (!MI.getOperand(i).isFI()) {
@@ -122,10 +120,8 @@ eliminateFrameIndex(MachineBasicBlock::iterator II, int SPAdj,
   // - If the frame object is any of the following, its offset must be adjusted
   //   by adding the size of the stack:
   //   incoming argument, callee-saved register location or local variable.
-  int64_t Offset;
-    Offset = spOffset + (int64_t)stackSize;
-
-  Offset    += MI.getOperand(i+1).getImm();
+  int64_t Offset = spOffset + (int64_t)stackSize;
+  Offset += MI.getOperand(i+1).getImm();
 
   DEBUG(errs() << "Offset     : " << Offset << "\n" << "<--------->\n");
 
@@ -136,21 +132,22 @@ eliminateFrameIndex(MachineBasicBlock::iterator II, int SPAdj,
   }
 
   MI.getOperand(i).ChangeToRegister(FrameReg, false);
-  MI.getOperand(i+1).ChangeToImmediate(Offset);
+  MI.getOperand(i + 1).ChangeToImmediate(Offset);
 }
 
-bool
-ChinxRegisterInfo::requiresRegisterScavenging(const MachineFunction &MF) const {
+bool ChinxRegisterInfo::requiresRegisterScavenging(const MachineFunction &MF) const {
     return true;
 }
 
-bool
-ChinxRegisterInfo::trackLivenessAfterRegAlloc(const MachineFunction &MF) const {
+bool ChinxRegisterInfo::trackLivenessAfterRegAlloc(const MachineFunction &MF) const {
     return true;
 }
 
-unsigned ChinxRegisterInfo::
-getFrameRegister(const MachineFunction &MF) const {
+unsigned ChinxRegisterInfo::getFrameRegister(const MachineFunction &MF) const {
   const TargetFrameLowering *TFI = MF.getSubtarget().getFrameLowering();
   return TFI->hasFP(MF) ? Chinx::FP : Chinx::SP;
+}
+
+const TargetRegisterClass* ChinxRegisterInfo::intRegClass(unsigned Size) const {
+	return &Chinx::CPURegsRegClass;
 }

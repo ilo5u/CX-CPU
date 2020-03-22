@@ -31,8 +31,6 @@ using namespace llvm;
 #define GET_SUBTARGETINFO_CTOR
 #include "ChinxGenSubtargetInfo.inc"
 
-extern bool FixGlobalBaseReg;
-
 void ChinxSubtarget::anchor() {}
 
 ChinxSubtarget::ChinxSubtarget(const Triple &TT, const std::string &CPU,
@@ -42,8 +40,8 @@ ChinxSubtarget::ChinxSubtarget(const Triple &TT, const std::string &CPU,
       ChinxFeatureVersion(Chinx1), ChinxArchVersion(ChinxDefault),
       TM(TM), TargetTriple(TT), TSInfo(),
       InstrInfo(
-          ChinxInstrInfo::create(initializeSubtargetDependencies(CPU, FS, TM))),
-      FrameLowering(ChinxFrameLowering::create(*this)),
+          ChinxInstrInfo::create(initializeSubtargetDependencies(CPU, FS, TM))
+      ), FrameLowering(ChinxFrameLowering::create(*this)),
       TLInfo(ChinxTargetLowering::create(TM, *this)) {}
 
 bool ChinxSubtarget::isPositionIndependent() const {
@@ -101,4 +99,6 @@ bool ChinxSubtarget::abiUsesSoftFloat() const {
   return true;
 }
 
-const ChinxABIInfo &ChinxSubtarget::getABI() const { return TM.getABI(); }
+const ChinxABIInfo &ChinxSubtarget::getABI() const { 
+  return TM.getABI(); 
+}

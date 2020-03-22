@@ -17,6 +17,7 @@
 
 #include "MCTargetDesc/ChinxABIInfo.h"
 #include "Chinx.h"
+#include "ChinxRegisterInfo.h"
 
 #include "llvm/CodeGen/CallingConvLower.h"
 #include "llvm/CodeGen/SelectionDAG.h"
@@ -81,16 +82,20 @@ namespace llvm {
   class ChinxTargetLowering : public TargetLowering  {
   public:
     explicit ChinxTargetLowering(const ChinxTargetMachine &TM,
-                                 const ChinxSubtarget &STI);
-    
-    explicit ChinxTargetLowering(ChinxTargetMachine& TM);
+                                 const ChinxSubtarget &ST);
 
     static const ChinxTargetLowering *create(const ChinxTargetMachine &TM,
-                                             const ChinxSubtarget &STI);
+                                             const ChinxSubtarget &ST);
 
     /// getTargetNodeName - This method returns the name of a target specific
     //  DAG node.
     const char *getTargetNodeName(unsigned Opcode) const override;
+
+    SDValue LowerReturn(SDValue Chain,
+                        CallingConv::ID CallConv, bool IsVarArg,
+                        const SmallVectorImpl<ISD::OutputArg> &Outs,
+                        const SmallVectorImpl<SDValue> &OutVals,
+                        const SDLoc &dl, SelectionDAG &DAG) const override;
 
   protected:
     // ByValArgInfo - ByVal argument information.
@@ -157,18 +162,7 @@ namespace llvm {
                                  const SmallVectorImpl<ISD::InputArg> &Ins,
                                  const SDLoc &dl, SelectionDAG &DAG,
                                  SmallVectorImpl<SDValue> &InVals) const override;
-
-    SDValue LowerReturn(SDValue Chain,
-                        CallingConv::ID CallConv, bool IsVarArg,
-                        const SmallVectorImpl<ISD::OutputArg> &Outs,
-                        const SmallVectorImpl<SDValue> &OutVals,
-                        const SDLoc &dl, SelectionDAG &DAG) const override;
   };
-
-  /// Create ChinxTargetLowering objects.
-  const ChinxTargetLowering *
-  createChinxSETargetLowering(const ChinxTargetMachine &TM,
-                              const ChinxSubtarget &STI);
 }
 
 #endif

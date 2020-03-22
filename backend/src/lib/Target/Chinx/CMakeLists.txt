@@ -21,15 +21,10 @@ add_llvm_target(ChinxCodeGen
         ChinxISelLowering.cpp
         ChinxMachineFunction.cpp
         ChinxRegisterInfo.cpp
-        ChinxSEFrameLowering.cpp
-        ChinxSEInstrInfo.cpp
-        ChinxSEISelLowering.cpp
-        ChinxSERegisterInfo.cpp
         ChinxSubtarget.cpp
         ChinxTargetObjectFile.cpp
         ChinxTargetMachine.cpp
         ChinxISelDAGToDAG.cpp
-        ChinxSEISelDAGToDAG.cpp
         ChinxAnalyzeImmediate.cpp
         )
 

@@ -27,20 +27,21 @@
 namespace llvm {
 class ChinxInstrInfo : public ChinxGenInstrInfo {
   virtual void anchor();
+  const ChinxRegisterInfo RI;
 
 protected:
   const ChinxSubtarget &Subtarget;
 
 public:
-  explicit ChinxInstrInfo(const ChinxSubtarget &STI);
+  explicit ChinxInstrInfo(const ChinxSubtarget &ST);
 
-  static const ChinxInstrInfo *create(ChinxSubtarget &STI);
+  static const ChinxInstrInfo *create(ChinxSubtarget &ST);
 
   /// getRegisterInfo - TargetInstrInfo is a superset of MRegister info.  As
   /// such, whenever a client has an instance of instruction info, it should
   /// always be able to get register info as well (through this method).
   ///
-  virtual const ChinxRegisterInfo &getRegisterInfo() const = 0;
+  const ChinxRegisterInfo &getRegisterInfo() const;
 
   /// Return the number of bytes of code the specified instruction may be.
   unsigned GetInstSizeInBytes(const MachineInstr &MI) const;
@@ -49,7 +50,7 @@ public:
     MachineBasicBlock::iterator MBBI,
     unsigned SrcReg, bool isKill, int FrameIndex,
     const TargetRegisterClass *RC,
-    const TargetRegisterInfo *TRI) const override {
+    const TargetRegisterInfo *TRI) const {
     storeRegToStack(MBB, MBBI, SrcReg, isKill, FrameIndex, RC, TRI, 0);
   }
 
@@ -57,35 +58,43 @@ public:
     MachineBasicBlock::iterator MBBI,
     unsigned DestReg, int FrameIndex,
     const TargetRegisterClass *RC,
-    const TargetRegisterInfo *TRI) const override {
+    const TargetRegisterInfo *TRI) const {
     loadRegFromStack(MBB, MBBI, DestReg, FrameIndex, RC, TRI, 0);
   }
 
-  virtual void storeRegToStack(MachineBasicBlock &MBB,
+  void storeRegToStack(MachineBasicBlock &MBB,
     MachineBasicBlock::iterator MI,
     unsigned SrcReg, bool isKill, int FrameIndex,
     const TargetRegisterClass *RC,
     const TargetRegisterInfo *TRI,
-    int64_t Offset) const = 0;
+    int64_t Offset) const;
 
-  virtual void loadRegFromStack(MachineBasicBlock &MBB,
+  void loadRegFromStack(MachineBasicBlock &MBB,
     MachineBasicBlock::iterator MI,
     unsigned DestReg, int FrameIndex,
-    const TargetRegisterClass *RC,
+    const TargetRegisterClass *TRC,
     const TargetRegisterInfo *TRI,
-    int64_t Offset) const = 0;
+    int64_t Offset) const;
 
-  virtual void adjustStackPtr(unsigned SP, int64_t Amount,
+  bool expandPostRAPseudo(MachineInstr &MI) const;
+
+  void adjustStackPtr(unsigned SP, int64_t Amount,
     MachineBasicBlock &MBB,
-    MachineBasicBlock::iterator I) const = 0;
+    MachineBasicBlock::iterator I) const;
+
+  /// Emit a series of instructions to load an immediate. If NewImm is a
+  /// non-NULL parameter, the last instruction is not emitted, but instead
+  /// its immediate operand is returned in NewImm.
+  unsigned loadImmediate(int64_t Imm, MachineBasicBlock &MBB,
+	  MachineBasicBlock::iterator II, const DebugLoc &DL, unsigned *NewImm) const;
 
 protected:
   MachineMemOperand *GetMemOperand(MachineBasicBlock &MBB, int FI,
     MachineMemOperand::Flags Flags) const;
-};
 
-/// Create ChinxInstrInfo objects.
-const ChinxInstrInfo *createChinxSEInstrInfo(const ChinxSubtarget &STI);
+private:
+	void expandRetRA(MachineBasicBlock &MBB, MachineBasicBlock::iterator I) const;
+};
 }
 
 #endif

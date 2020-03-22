@@ -35,7 +35,7 @@ public:
   const MCPhysReg *getCalleeSavedRegs(const MachineFunction *MF) const override;
 
   const uint32_t *getCallPreservedMask(const MachineFunction &MF,
-                                       CallingConv::ID) const override;
+	  CallingConv::ID) const override;
 
   BitVector getReservedRegs(const MachineFunction &MF) const override;
 
@@ -45,14 +45,13 @@ public:
 
   /// Stack Frame Processing Methods
   void eliminateFrameIndex(MachineBasicBlock::iterator II,
-                           int SPAdj, unsigned FIOperandNum,
-                           RegScavenger *RS = nullptr) const override;
+	  int SPAdj, unsigned FIOperandNum, RegScavenger *RS = nullptr) const override;
 
   /// Debug information queries.
   unsigned getFrameRegister(const MachineFunction &MF) const override;
 
   /// \brief Return GPR register class.
-  virtual const TargetRegisterClass *intRegClass(unsigned Size) const = 0;
+  const TargetRegisterClass *intRegClass(unsigned Size) const;
 };
 
 } // end namespace llvm
