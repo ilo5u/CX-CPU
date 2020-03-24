@@ -1,3 +1,5 @@
+<font face=Tahoma>
+
 # 1 前言
 
 本次课题主要利用本科阶段所学的知识，从工程实践的角度出发，设计并实现一个32位的模型机。该模型机能够在Basys3或ZNYQ系列的FPGA平台上正确运行，同时能够利用LLVM开源系统完成从C语言（子集）编写的高级语言程序到该模型机所支持的汇编代码的翻译过程。
@@ -20,15 +22,15 @@ OS: ``Unbuntu 2016.6`` Tools: ``llvm 3.9.0``
 
 ## 1.4 文件说明
 
-``sys``: 包含Chinx模型机的Verilog HDL源文件以及仿真文件
+**sys**: 包含Chinx模型机的Verilog HDL源文件以及仿真文件
 
-``backend``: 包含Chinx ISA的LLVM后端移植源文件
+**backend**: 包含Chinx ISA的LLVM后端移植源文件
 
-``pics``: 说明手册用图
+**pics**: 说明手册用图
 
-``README.md``: 英文版说明手册
+**README.md**: 英文版说明手册
 
-``README_CHS.md``: 中文版说明手册
+**README_CHS.md**: 中文版说明手册
 
 # 2 Chinx模型机设计
 
@@ -44,7 +46,76 @@ OS: ``Unbuntu 2016.6`` Tools: ``llvm 3.9.0``
 
 ### 2.1.1 指令集
 
+Chinx指令中的算数逻辑运算、访存、跳转和乘法指令的汇编格式参照MIPS32指令集快速参考手册<sup>[[5]]</sup>进行设计，而其编码格式由自己定义，除此之外的堆栈和函数调用指令全为自定义指令。
+
+**指令类型**
+
+**R型**：指令字长32位、操作码、最多三个寄存器操作数
+
+| OP(6) | Ra(5) | Rb(5) | Rc(5) | Reserved(11) |
+| ----- | ----- | ----- | ----- | ------------ |
+
+**I型**：指令字长32位、操作码、最多两个寄存器操作数、一个立即数
+
+| OP(6) | Ra(5) | Rb(5) | Imm(16)              |
+| ----- | ----- | ----- | -------------------- |
+
+**J型**：指令字长32位、操作码、地址码
+
+| OP(6) | Address(26)                          |
+| ----- | ------------------------------------ |
+
+**指令格式**
+
+1. 算术指令
+
+|OP|Type|Fommat|Function|
+|:-:|:-:|:-|:-|
+|01|R|ADD  Ra, Rb, Rc|Ra = Rb + Rc|
+|02|I|ADDI Ra, Rb, Imm16|Ra = Rb + Imm16|
+|03|I|LUI  Ra, Imm16|Ra = (Imm16 << 16) &#124; 0xFFFF|
+
+2. 移位指令
+
+|OP|Type|Fommat|Function|
+|:-:|:-:|:-|:-|
+|04|I|SLL  Ra, Rb, Imm5|Ra = Rb << Imm5|
+
+3. 逻辑指令
+
+|OP|Type|Fommat|Function|
+|:-:|:-:|:-|:-|
+|00|R|NOP|No operation|
+|05|I|ORI Ra, Rb, Imm16|Ra = Rb &#124; SignedExt32(Imm16)|
+
+4. 跳转指令
+
+|OP|Type|Fommat|Function|
+|:-:|:-:|:-|:-|
+|06|R|JR Ra|PC = Ra|
+
+5. 访存指令
+
+|OP|Type|Fommat|Function|
+|:-:|:-:|:-|:-|
+|07|I|LW Ra,Imm16(Rb)|Ra = MEM32(Rb + SignedExt32(Imm16))|
+|08|I|SW Ra,Imm16(Rb)|MEM32(Rb + SignedExt32(Imm16)) = Ra|
+
+6. 函数调用指令
+
+|OP|Type|Fommat|Function|
+|:-:|:-:|:-|:-|
+|09|R|RET|PC = RA|
+
 ### 2.1.2 流水线
+
+流水线的思想旨在并行执行，将一条指令完整的执行过程划分为K段，每一段用相互独立的功能单元执行特定的任务，那么K<sub>i</sub>和K<sub>j</sub>(i≠j)段的器件便能在空间和时间上同时运行。这样在执行连续的N条指令时，将大幅度缩短N条指令执行完毕所需要的时间。
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ntask1.png)
+
+<font size=3>*图2.1.2.1 N条指令串行执行所用时间*</font>
+
+经典五段流水线包含取指(IF)、译码(ID)、执行或有效地址(EX)、访存(MEM)和写回(WB)这五个阶段。
 
 ## 2.2 FPGA电路设计
 
@@ -76,7 +147,12 @@ OS: ``Unbuntu 2016.6`` Tools: ``llvm 3.9.0``
 
 [[4]] The Design of a Custom 32-bit RISC CPU and LLVM Compiler Backend,<http://scholarworks.rit.edu/thesis>
 
+[[5]]MIPS@32 ISA,MIPS32 Instruction Set Quick Reference v1.01,<https://www.mips.com/products/architectures/mips32-2/>
+
 [1]: http://jonathan2251.github.io/lbd/
 [2]: https://llvm.org/docs/WritingAnLLVMBackend.html
 [3]: http://llvm.org/docs/TableGen/index.html
 [4]: http://scholarworks.rit.edu/thesis
+[5]: https://www.mips.com/products/architectures/mips32-2/
+
+</font>
