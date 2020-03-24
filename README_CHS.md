@@ -113,7 +113,9 @@ Chinx指令中的算数逻辑运算、访存、跳转和乘法指令的汇编格
 
 ![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ntask1.png)
 
-<font size=3>*图2.1.2.1 N条指令串行执行所用时间*</font>
+<center>
+    <font size=2>*图2.1.2.1 N条指令串行执行所用时间*</font>
+</center>
 
 经典五段流水线包含取指(IF)、译码(ID)、执行或有效地址(EX)、访存(MEM)和写回(WB)这五个阶段。
 
