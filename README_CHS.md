@@ -111,7 +111,7 @@ Chinx指令中的算数逻辑运算、访存、跳转和乘法指令的汇编格
 
 流水线的思想旨在并行执行，将一条指令完整的执行过程划分为K段，每一段用相互独立的功能单元执行特定的任务，那么K<sub>i</sub>和K<sub>j</sub>(i≠j)段的器件便能在空间和时间上同时运行。这样在执行连续的N条指令时，将大幅度缩短N条指令执行完毕所需要的时间。
 
-![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ntask1.png)
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ntasks1.png)
 
 <center>
     <font size=2>*图2.1.2.1 N条指令串行执行所用时间*</font>
