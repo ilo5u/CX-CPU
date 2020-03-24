@@ -69,7 +69,7 @@ Chinx指令中的算数逻辑运算、访存、跳转和乘法指令的汇编格
 
 1. 算术指令
 
-|OP|Type|Fommat|Function|
+|OP|Type|Format|Function|
 |:-:|:-:|:-|:-|
 |01|R|ADD  Ra, Rb, Rc|Ra = Rb + Rc|
 |02|I|ADDI Ra, Rb, Imm16|Ra = Rb + Imm16|
@@ -77,33 +77,33 @@ Chinx指令中的算数逻辑运算、访存、跳转和乘法指令的汇编格
 
 2. 移位指令
 
-|OP|Type|Fommat|Function|
+|OP|Type|Format|Function|
 |:-:|:-:|:-|:-|
 |04|I|SLL  Ra, Rb, Imm5|Ra = Rb << Imm5|
 
 3. 逻辑指令
 
-|OP|Type|Fommat|Function|
+|OP|Type|Format|Function|
 |:-:|:-:|:-|:-|
 |00|R|NOP|No operation|
 |05|I|ORI Ra, Rb, Imm16|Ra = Rb &#124; SignedExt32(Imm16)|
 
 4. 跳转指令
 
-|OP|Type|Fommat|Function|
+|OP|Type|Format|Function|
 |:-:|:-:|:-|:-|
 |06|R|JR Ra|PC = Ra|
 
 5. 访存指令
 
-|OP|Type|Fommat|Function|
+|OP|Type|Format|Function|
 |:-:|:-:|:-|:-|
 |07|I|LW Ra,Imm16(Rb)|Ra = MEM32(Rb + SignedExt32(Imm16))|
 |08|I|SW Ra,Imm16(Rb)|MEM32(Rb + SignedExt32(Imm16)) = Ra|
 
 6. 函数调用指令
 
-|OP|Type|Fommat|Function|
+|OP|Type|Format|Function|
 |:-:|:-:|:-|:-|
 |09|R|RET|PC = RA|
 
