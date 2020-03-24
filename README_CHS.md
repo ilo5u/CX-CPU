@@ -112,14 +112,13 @@ Chinx指令中的算数逻辑运算、访存、跳转和乘法指令的汇编格
 流水线的思想旨在并行执行，将一条指令完整的执行过程划分为K段，每一段用相互独立的功能单元执行特定的任务，那么K<sub>i</sub>和K<sub>j</sub>(i≠j)段的器件便能在空间和时间上同时运行。这样在执行连续的N条指令时，将大幅度缩短N条指令执行完毕所需要的时间。
 
 <div align=center>
-    <img src="https://github.com/ilo5u/CX-CPU/blob/master/pics/ntasks1.png">
+    <img src="https://github.com/ilo5u/CX-CPU/blob/master/pics/ntasks1.png"><br>
+    <font size=2>
+        图2.1.2.1 N条指令串行执行所用时间
+    </font>
 </div>
 
-<font size=2>
-    <center>
-        *图2.1.2.1 N条指令串行执行所用时间*
-    </center>
-</font>
+
 
 经典五段流水线包含取指(IF)、译码(ID)、执行或有效地址(EX)、访存(MEM)和写回(WB)这五个阶段。
 
