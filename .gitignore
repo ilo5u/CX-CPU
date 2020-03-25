@@ -7,4 +7,5 @@
 /sys/*.log
 /sys/*.jou
 /sys/*.str
+/sys/sys.srcs/sources_1/ip
 *.xpr
