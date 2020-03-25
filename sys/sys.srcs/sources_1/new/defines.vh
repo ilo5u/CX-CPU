@@ -10,6 +10,9 @@
 `define BUS_WIDTH 64
 `endif
 
+`define LEV_L 1'b0
+`define LEV_H 1'b1
+
 /*****************************
      Instruction Infos 
 *****************************/
