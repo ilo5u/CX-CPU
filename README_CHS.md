@@ -126,6 +126,17 @@ Chinx指令中的算数逻辑运算、访存、跳转和乘法指令的汇编格
 
 ### 2.2.2 模块化设计
 
+1. 流水线
+
+**IF段**
+
+<div align=center>
+    <img src="https://github.com/ilo5u/CX-CPU/blob/master/pics/stage1.png"><br>
+    <font size=2>
+        图2.2.2.1 IF段
+    </font>
+</div>
+
 ## 2.3 LLVM编译后端设计
 
 ### 2.3.1 注册Chinx模型机
