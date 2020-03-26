@@ -5,7 +5,7 @@
 // 
 // Create Date: 2020/03/25
 // Design Name: 
-// Module Name: chinx_stage1
+// Module Name: chinx_accu
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 

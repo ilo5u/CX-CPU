@@ -31,7 +31,7 @@ module chinx_pc(
 );
 
 always @(posedge clk) begin
-    if (rst == `LEV_L) begin
+    if (rst == `LEV_H) begin
         pc_o <= `BUS_WIDTH'd0;
     end else if (stall == `LEV_H) begin
         pc_o <= pc_o;
