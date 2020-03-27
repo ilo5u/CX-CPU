@@ -26,14 +26,14 @@ module chinx_stage1(
     input wire stall, // pipeline stall signal
 
     input wire be_i, // select the next pc value
-    input wire [`BUS_WIDTH - 1:0] baddr_i, // branch address
+    input wire [`ADDR_WIDTH - 1:0] baddr_i, // branch address
 
-    output wire [`BUS_WIDTH - 1:0] pc_o, // pc in IF stage
+    output wire [`ADDR_WIDTH - 1:0] pc_o, // pc in IF stage
     output wire [`INS_WIDTH - 1:0] instr_o // instruction in IF stage
 );
 
-wire [`BUS_WIDTH - 1:0] pci_w; // connect nextpc and pc
-wire [`BUS_WIDTH - 1:0] pco_w; // connect pc and instrmem and accu
+wire [`ADDR_WIDTH - 1:0] pci_w; // connect nextpc and pc
+wire [`ADDR_WIDTH - 1:0] pco_w; // connect pc and instrmem and accu
 
 chinx_pc pc(.clk(clk),
             .rst(rst),
@@ -41,9 +41,9 @@ chinx_pc pc(.clk(clk),
             .pc_i(pci_w),
             .pc_o(pco_w));
             
-ram32 instrmem(.a(pco_w[8:0]), .spo(instr_o));
+rom32 instrmem(.a(pco_w[8:0]), .spo(instr_o));
 
-wire [`BUS_WIDTH - 1:0] pca_w; // connect accu and mux2
+wire [`ADDR_WIDTH - 1:0] pca_w; // connect accu and mux2
 
 // pca_w = pco_w + 1
 chinx_accu accu(.num_i(pco_w), .num_o(pca_w));

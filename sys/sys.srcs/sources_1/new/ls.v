@@ -27,13 +27,13 @@ module chinx_ls(
     input wire memce_i,
     input wire memop_i,
 
-    input wire [`BUS_WIDTH - 1:0] addr_i,
-    input wire [`BUS_WIDTH - 1:0] load_i,
-    input wire [`BUS_WIDTH - 1:0] store_i,
+    input wire [`ADDR_WIDTH - 1:0] addr_i,
+    input wire [`DATA_WIDTH - 1:0] load_i,
+    input wire [`DATA_WIDTH - 1:0] store_i,
 
-    output reg [`BUS_WIDTH - 1:0] addr_o,
-    output reg [`BUS_WIDTH - 1:0] store_o,
-    output reg [`BUS_WIDTH - 1:0] load_o,
+    output reg [`ADDR_WIDTH - 1:0] addr_o,
+    output reg [`DATA_WIDTH - 1:0] store_o,
+    output reg [`DATA_WIDTH - 1:0] load_o,
 
     output reg rwe
 );

@@ -22,9 +22,9 @@
 
 module chinx_mux2(
     input wire sel_i,
-    input wire [`BUS_WIDTH - 1:0] data0_i,
-    input wire [`BUS_WIDTH - 1:0] data1_i,
-    output wire [`BUS_WIDTH - 1:0] data_o
+    input wire [`DATA_WIDTH - 1:0] data0_i,
+    input wire [`DATA_WIDTH - 1:0] data1_i,
+    output wire [`DATA_WIDTH - 1:0] data_o
 );
 assign data_o = (sel_i == 1'b0) ? data0_i : data1_i;
 endmodule

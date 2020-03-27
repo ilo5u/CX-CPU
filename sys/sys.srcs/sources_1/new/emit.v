@@ -26,15 +26,15 @@ module chinx_emit(
     input wire busy,
     input wire flush,
 
-    input wire [`BUS_WIDTH - 1:0] pc_i,
-    input wire [`BUS_WIDTH - 1:0] instr_i,
+    input wire [`ADDR_WIDTH - 1:0] pc_i,
+    input wire [`INS_WIDTH - 1:0] instr_i,
 
-    output reg [`REG_ADDR_WIDTH - 1:0] ra_o,
-    output reg [`REG_ADDR_WIDTH - 1:0] rb_o,
-    output reg [`REG_ADDR_WIDTH - 1:0] rc_o,
+    output reg [`REG_ADDR_WIDTH - 1:0] waddr_o,
+    output reg [`REG_ADDR_WIDTH - 1:0] raddr0_o,
+    output reg [`REG_ADDR_WIDTH - 1:0] raddr1_o,
 
-    output reg [`IMM_WIDTH - 1:0] imm_o,
-    output reg [`BADDR_WIDTH - 1:0] baddr_o,
+    output reg [`INSTR_IMM_WIDTH - 1:0] imm_o,
+    output reg [`INSTR_BADDR_WIDTH - 1:0] baddr_o,
 
     output reg immext_o, // signed or unsigned
 
@@ -83,8 +83,8 @@ wire [`INSTR_OPC_WIDTH - 1:0] opcode_w = instr_i[31:26];
 wire [`REG_ADDR_WIDTH - 1:0] ra_w = instr_i[25:21];
 wire [`REG_ADDR_WIDTH - 1:0] rb_w = instr_i[20:16];
 wire [`REG_ADDR_WIDTH - 1:0] rc_w = instr_i[15:11];
-wire [`IMM_WIDTH - 1:0] imm_w = instr_i[15:0];
-wire [`BADDR_WIDTH - 1:0] baddr_w = instr_i[25:0];
+wire [`INSTR_IMM_WIDTH - 1:0] imm_w = instr_i[15:0];
+wire [`INSTR_BADDR_WIDTH - 1:0] baddr_w = instr_i[25:0];
 
 reg [`REG_ADDR_WIDTH - 1:0] conflict_r; // used for lw and mul operation
 
@@ -93,11 +93,8 @@ reg load_r;
 always @(posedge clk) begin
     if (rst == `LEV_H) begin
         // output signals
-        ra_o <= `REG_ADDR_WIDTH'd31;
-        rb_o <= `REG_ADDR_WIDTH'd0;
-        rc_o <= `REG_ADDR_WIDTH'd0;
-        imm_o <= `IMM_WIDTH'd0;
-        baddr_o <= `BADDR_WIDTH'd0;
+        imm_o <= `INSTR_IMM_WIDTH'd0;
+        baddr_o <= `INSTR_BADDR_WIDTH'd0;
         immext_o <= `LEV_L;
         wbe_o <= `LEV_L;
         memce_o <= `LEV_L;
@@ -109,12 +106,13 @@ always @(posedge clk) begin
         // dismiss the write effects
         wbe_o <= `LEV_L;
     end else begin
-        ra_o <= ra_w;
-        rb_o <= rb_w;
-        rc_o <= rc_w;
         imm_o <= imm_w;
         if ((opcode_w > ALO_BEGIN) && (opcode_w < ALO_END)) begin
             // add,addi,ori
+            // set the data flow from regfiles
+            waddr_o <= ra_w;
+            raddr0_o <= rb_w;
+            raddr1_o <= rc_w;
             // all operations need to write back
             wbe_o <= `LEV_H;
             // no load and store operations
@@ -125,11 +123,11 @@ always @(posedge clk) begin
             immext_o <= (opcode_w < ALO_UIMM) ? `EXT_SIGNED : `EXT_UNSIGNED;
 
             // set the data flow sources of ALU
-            alusrca_o <= `ALU_SRC_RB;
-            alusrcb_o <= (opcode_w < ALO_SIMM) ? `ALU_SRC_RC : `ALU_SRC_IMM;
+            alusrca_o <= `ALU_SRC_R0;
+            alusrcb_o <= (opcode_w < ALO_SIMM) ? `ALU_SRC_R1 : `ALU_SRC_IMM;
 
-            alures_o <= (opcode_w == ADD || opcode_w == ADDI) ? `ALU_RES_ADD
-                : `ALU_RES_OR;
+            alures_o <= (opcode_w == ADD || opcode_w == ADDI) ?
+                `ALU_RES_ADD : `ALU_RES_OR;
 
             // do not branch
             be_o <= `LEV_L;
@@ -157,7 +155,7 @@ always @(posedge clk) begin
             immext_o <= `EXT_SIGNED;
 
             // set the data flow sources and result of ALU
-            alusrca_o <= `ALU_SRC_RB;
+            alusrca_o <= `ALU_SRC_R1;
             alusrcb_o <= `ALU_SRC_IMM;
             alures_o <= `ALU_RES_ADD;
 
@@ -175,7 +173,7 @@ always @(posedge clk) begin
             immext_o <= `EXT_SIGNED;
 
             // set the data flow sources and result of ALU
-            alusrca_o <= `ALU_SRC_RB;
+            alusrca_o <= `ALU_SRC_R1;
             alusrcb_o <= `ALU_SRC_IMM;
             alures_o <= `ALU_RES_ADD;
 

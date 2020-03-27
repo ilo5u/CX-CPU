@@ -21,8 +21,8 @@
 `include "defines.vh"
 
 module chinx_accu(
-    input wire [`BUS_WIDTH - 1:0] num_i,
-    output wire [`BUS_WIDTH - 1:0] num_o
+    input wire [`DATA_WIDTH - 1:0] num_i,
+    output wire [`DATA_WIDTH - 1:0] num_o
 );
 assign num_o = num_i + 1;
 endmodule
