@@ -26,10 +26,12 @@ reg clk;
 reg rst;
 initial begin
     clk = 0;
-    rst = 0;
-    #(($random)%10 + 2) rst = ~rst;
-    #(($random)%10 + 5) rst = ~rst;
     forever #5 clk = ~clk;
+end
+initial begin
+    rst = 0;
+    #12 rst = ~rst;
+    #15 rst = ~rst;
 end
 wire [`ADDR_WIDTH - 1:0] pc;
 wire [`DATA_WIDTH - 1:0] instr;
