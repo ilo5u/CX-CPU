@@ -16,7 +16,7 @@
 /*****************************
      Instruction Infos 
 *****************************/
-`define INS_WIDTH 32
+`define INSTR_WIDTH 32
 `define INSTR_OPC_WIDTH 6
 `define INSTR_IMM_WIDTH 16
 `define INSTR_BADDR_WIDTH 26
@@ -29,7 +29,13 @@
 
 `define ALU_RES_WIDTH 3
 `define ALU_RES_ADD 3'b000
-`define ALU_RES_OR 3'b001
+`define ALU_RES_SUB 3'b001
+`define ALU_RES_MEM 3'b010
+`define ALU_RES_EXT 3'b011
+`define ALU_RES_AND 3'b100
+`define ALU_RES_OR 3'b101
+`define ALU_RES_XOR 3'b110
+`define ALU_RES_NOT 3'b111
 
 `define MEM_LOAD 1'b0
 `define MEM_STORE 1'b1
@@ -40,7 +46,13 @@
 `define REG_NUM 32
 `define REG_ADDR_WIDTH 5 // Power(2, 5) = 32
 `define REG_ZERO `REG_ADDR_WIDTH'd0
+`define REG_RA `REG_ADDR_WIDTH'd31
 
 `define MEM_OPND_WIDTH 3
+`define MEM_OPND_WORD `MEM_OPND_WIDTH'd0
+`define MEM_OPND_HALF `MEM_OPND_WIDTH'd1
+`define MEM_OPND_HALFU `MEM_OPND_WIDTH'd2
+`define MEM_OPND_BYTE `MEM_OPND_WIDTH'd3
+`define MEM_OPND_BYTEU `MEM_OPND_WIDTH'd4
 
 `endif

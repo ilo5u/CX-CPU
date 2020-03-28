@@ -25,12 +25,10 @@ module chinx_emit(
     input wire rst,
 
     input wire [`ADDR_WIDTH - 1:0] pc_i,
-    input wire [`INS_WIDTH - 1:0] instr_i,
+    input wire [`INSTR_WIDTH - 1:0] instr_i,
     // from HI/LO register
     input wire [`DATA_WIDTH - 1:0] hi_i,
     input wire [`DATA_WIDTH - 1:0] lo_i,
-    // from load operation
-    input wire [`DATA_WIDTH - 1:0] load_i,
     // write back to regfiles
     output reg [`REG_ADDR_WIDTH - 1:0] waddr_o,
     output reg [`REG_ADDR_WIDTH - 1:0] raddr0_o,
@@ -48,7 +46,7 @@ module chinx_emit(
     output reg [`ALU_SRC_WIDTH - 1:0] alusrca_o, // Rb, Rc, ExtImm
     output reg [`ALU_SRC_WIDTH - 1:0] alusrcb_o, // Rb, Rc, ExtImm
 
-    // Arith: ADD, SUB, MUL, EXT
+    // Arith: ADD, SUB, MEM, EXT
     // Logic: AND, OR, XOR, NOT
     output reg [`ALU_RES_WIDTH - 1:0] alures_o,
 
@@ -144,15 +142,17 @@ always @(posedge clk) begin
             // all operations need to write back
             wbe_o <= `LEV_H;
             // no load and store operations
-            memce_o <= `LEV_L;
+            memce_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `LEV_H : `LEV_L;
             // set the extension model of immediate number
             immext_o <= (opcode_w < ALO_UIMM) ? `EXT_SIGNED : `EXT_UNSIGNED;
             // set the data flow of sources sent to ALU
             alusrca_o <= `ALU_SRC_R0;
             alusrcb_o <= (opcode_w < ALO_SIMM) ? `ALU_SRC_R1 : `ALU_SRC_IMM;
             // set the data flow of ALU result
-            alures_o <= (opcode_w == ADD || opcode_w == ADDI) ?
-                `ALU_RES_ADD : `ALU_RES_OR;
+            alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `ALU_RES_MEM : ((opcode_w == ADD || opcode_w == ADDI) ?
+                    `ALU_RES_ADD : `ALU_RES_OR);
             // do not branch
             be_o <= `LEV_L;
             if (ls_busy_r == `LEV_H && ls_period_r == `LEV_H) begin
@@ -162,6 +162,15 @@ always @(posedge clk) begin
                 ls_busy_r <= `LEV_L;
             end else if (ls_busy_r == `LEV_H && ra_w == conflict_r ) begin
                 // WAW conflict
+                // stall the stage1 to keep the pc value
+                stall <= `LEV_H;
+            end else if (ls_busy_r == `LEV_H && rb_w == conflict_r ) begin
+                // RAW conflict
+                // stall the stage1 to keep the pc value
+                stall <= `LEV_H;
+            end else if (ls_busy_r == `LEV_H && rc_w == conflict_r
+                && (opcode_w < ALO_SIMM)) begin
+                // RAW conflict
                 // stall the stage1 to keep the pc value
                 stall <= `LEV_H;
             end else begin
@@ -178,14 +187,19 @@ always @(posedge clk) begin
             wbe_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H) ? // load
                 `LEV_H : `LEV_L;
             waddr_o <= conflict_r;
+            // set the data flow from regfiles
+            raddr0_o <= ra_w;
+            raddr1_o <= rb_w;
             // no load and store operations
-            memce_o <= `LEV_L;
+            memce_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `LEV_H : `LEV_L;
             // set the extension model of immediate number
             immext_o <= `EXT_SIGNED;
             // set the data flow sources and result of ALU
-            alusrca_o <= `ALU_SRC_R1;
+            alusrca_o <= `ALU_SRC_R0;
             alusrcb_o <= `ALU_SRC_IMM;
-            alures_o <= `ALU_RES_ADD;
+            alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `ALU_RES_MEM : `ALU_RES_ADD;
             // branch
             be_o <= `LEV_H;
             br_flush_r <= `LEV_H;
@@ -198,6 +212,9 @@ always @(posedge clk) begin
             wbe_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H) ? // load
                 `LEV_H : `LEV_L;
             waddr_o <= conflict_r;
+            // set the data flow from regfiles
+            raddr0_o <= ra_w;
+            raddr1_o <= rb_w;
             // load and store operations
             memce_o <= `LEV_H;
             memop_o <= (opcode_w < LSO_STORE) ? `MEM_LOAD : `MEM_STORE;
@@ -207,7 +224,8 @@ always @(posedge clk) begin
             // set the data flow sources and result of ALU
             alusrca_o <= `ALU_SRC_R1;
             alusrcb_o <= `ALU_SRC_IMM;
-            alures_o <= `ALU_RES_ADD;
+            alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `ALU_RES_MEM : `ALU_RES_ADD;
             // do not branch
             be_o <= `LEV_L;
             if (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) begin

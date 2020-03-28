@@ -26,7 +26,7 @@ module chinx_stage2(
     input rst,
 
     input wire [`ADDR_WIDTH - 1:0] pc_i,
-    input wire [`INS_WIDTH - 1:0] instr_i,
+    input wire [`INSTR_WIDTH - 1:0] instr_i,
 
     input wire [`DATA_WIDTH - 1:0] load_i,
 
@@ -35,7 +35,7 @@ module chinx_stage2(
 
     output wire memce_o,
     output wire memop_o,
-    output wire memod_w,
+    output wire memod_o,
     
     output wire be_o,
     output wire [`ADDR_WIDTH - 1:0] baddr_o,
@@ -61,7 +61,6 @@ chinx_emit emit(
     .instr_i(instr_i),
     .hi_i(hio_w),
     .lo_i(loo_w),
-    .load_i(load_i),
     .waddr_o(waddr_w),
     .raddr0_o(raddr0_w),
     .raddr1_o(raddr1_w),
@@ -75,12 +74,13 @@ chinx_emit emit(
     .alusrca_o(alusrca_w),
     .alusrcb_o(alusrcb_w),
     .alures_o(alures_w),
-    .be_o(be_o)，
+    .be_o(be_o),
     .stall(stall)
 );
 
 wire [`DATA_WIDTH - 1:0] rdata0_w;
 wire [`DATA_WIDTH - 1:0] rdata1_w;
+wire [`DATA_WIDTH - 1:0] result_w;
 chinx_regfiles regfiles(
     .clk(clk),
     .rst(rst),
@@ -88,6 +88,7 @@ chinx_regfiles regfiles(
     .raddr1_i(raddr1_w),
     .we_i(wbe_w),
     .waddr_i(waddr_w),
+    .wdata_i(result_w),
     .rdata0_o(rdata0_w),
     .rdata1_o(rdata1_w)
 );
@@ -99,7 +100,7 @@ chinx_ext32 ext32(
     .imm32_o(imm32_w)
 );
 
-wire [`DATA_WIDTH - 1:0] result_w;
+wire [`DATA_WIDTH - 1:0] lo_w;
 wire [`DATA_WIDTH - 1:0] hi_w;
 chinx_alu alu(
     .mulclk(mulclk),
@@ -111,6 +112,7 @@ chinx_alu alu(
     .pc_i(pc_i),
     .alures_i(alures_w),
     .result_o(result_w),
+    .lo_o(lo_w),
     .hi_o(hi_w)
 );
 
@@ -118,7 +120,7 @@ chinx_hilo hilo(
     .clk(clk),
     .we(hle_w),
     .hi_i(hi_w),
-    .lo_i(result_w),
+    .lo_i(lo_w),
     .hi_o(hio_w),
     .lo_o(loo_w)
 );

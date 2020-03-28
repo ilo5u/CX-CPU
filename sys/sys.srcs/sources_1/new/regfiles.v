@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -39,7 +40,7 @@ reg [`DATA_WIDTH - 1:0] files[`REG_NUM - 1:0];
 always @(negedge clk) begin
     if (rst == `LEV_H) begin
         files[`REG_ZERO] = `DATA_WIDTH'd0;
-    end else if (we_i == `LEV_H) begin
+    end else if (we_i == `LEV_H && waddr_i != `REG_ZERO) begin
         files[waddr_i] = wdata_i;
     end
 end

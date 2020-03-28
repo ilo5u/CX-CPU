@@ -29,7 +29,7 @@ module chinx_stage1(
     input wire [`ADDR_WIDTH - 1:0] baddr_i, // branch address
 
     output wire [`ADDR_WIDTH - 1:0] pc_o, // pc in IF stage
-    output wire [`INS_WIDTH - 1:0] instr_o // instruction in IF stage
+    output wire [`INSTR_WIDTH - 1:0] instr_o // instruction in IF stage
 );
 
 wire [`ADDR_WIDTH - 1:0] pci_w; // connect nextpc and pc

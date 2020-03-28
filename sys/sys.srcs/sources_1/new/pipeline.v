@@ -29,13 +29,21 @@ module chinx_pipeline(
     output wire stall
 );
 
-clock_gen gen();
+wire ramclk;
+wire mulclk;
+clock_gen gen(
+    .reset(1'b0),
+    .clk_in1(clk),
+    .clk_out1(ramclk),
+    .clk_out2(mulclk),
+    .locked()
+);
 
 wire stall_w;
 wire be_w;
 wire [`ADDR_WIDTH - 1:0] baddr_w;
 wire [`ADDR_WIDTH - 1:0] pc_w;
-wire [`INS_WIDTH - 1:0] instr_w;
+wire [`INSTR_WIDTH - 1:0] instr_w;
 chinx_stage1 stage1(
     .clk(clk),
     .rst(rst),
@@ -43,13 +51,12 @@ chinx_stage1 stage1(
     .be_i(be_w),
     .baddr_i(baddr_w),
     .pc_o(pc_w),
-    .isntr_o(instr_w)
+    .instr_o(instr_w)
 );
 assign pc = pc_w;
 assign instr = instr_w;
 assign stall = stall_w;
 
-wire mulclk;
 wire memce_w;
 wire memop_w;
 wire [`MEM_OPND_WIDTH - 1:0] memod_w;
@@ -73,7 +80,6 @@ chinx_stage2 stage2(
     .stall(stall_w)
 );
 
-wire ramclk;
 chinx_ram32 ram32(
     .ramclk(ramclk),
     .ce(memce_w),

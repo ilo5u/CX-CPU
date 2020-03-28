@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -29,6 +30,7 @@ module chinx_alu(
     
     input wire [`ALU_RES_WIDTH - 1:0] alures_i,
     output wire [`DATA_WIDTH - 1:0] result_o,
+    output wire [`DATA_WIDTH - 1:0] lo_o,
     output wire [`DATA_WIDTH - 1:0] hi_o
 );
 
@@ -78,14 +80,16 @@ chinx_mux8 result(
     .sel_i(alures_i),
     .data0_i(add_w),
     .data1_i(sub_w),
-    .data2_i(mul_w[31:0]),
+    .data2_i(load_i),
     .data3_i(extimm_i),
     .data4_i(a_w & b_w),
     .data5_i(a_w | b_w),
     .data6_i(((~a_w) & b_w) | (a_w & (~b_w))),
-    .data7_i(~a_w)
+    .data7_i(~a_w),
+    .data_o(result_o)
 );
 
+assign lo_o = mul_w[31:0];
 assign hi_o = mul_w[63:32];
 
 endmodule
