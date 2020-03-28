@@ -22,7 +22,6 @@
 
 module chinx_stage2(
     input clk,
-    input mulclk,
     input rst,
 
     input wire [`ADDR_WIDTH - 1:0] pc_i,
@@ -35,7 +34,7 @@ module chinx_stage2(
 
     output wire memce_o,
     output wire memop_o,
-    output wire memod_o,
+    output wire [`MEM_OPND_WIDTH - 1:0] memod_o,
     
     output wire be_o,
     output wire [`ADDR_WIDTH - 1:0] baddr_o,
@@ -103,11 +102,11 @@ chinx_ext32 ext32(
 wire [`DATA_WIDTH - 1:0] lo_w;
 wire [`DATA_WIDTH - 1:0] hi_w;
 chinx_alu alu(
-    .mulclk(mulclk),
     .alusrca_i(alusrca_w),
     .alusrcb_i(alusrcb_w),
     .rdata0_i(rdata0_w),
     .rdata1_i(rdata1_w),
+    .load_i(load_i),
     .extimm_i(imm32_w),
     .pc_i(pc_i),
     .alures_i(alures_w),
@@ -127,6 +126,6 @@ chinx_hilo hilo(
 
 assign addr_o = result_w;
 assign store_o = rdata0_w;
-assign baddr_o = result_w[15:0];
+assign baddr_o = result_w[`ADDR_WIDTH - 1:0];
 
 endmodule

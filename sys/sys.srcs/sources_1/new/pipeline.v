@@ -29,15 +29,14 @@ module chinx_pipeline(
     output wire stall
 );
 
-wire ramclk;
-wire mulclk;
-clock_gen gen(
-    .reset(1'b0),
-    .clk_in1(clk),
-    .clk_out1(ramclk),
-    .clk_out2(mulclk),
-    .locked()
-);
+reg ramclk;
+always @(posedge clk) begin
+    if (rst == `LEV_H) begin
+        ramclk <= `LEV_H;
+    end else begin
+        ramclk <= ~ramclk;
+    end
+end
 
 wire stall_w;
 wire be_w;
@@ -65,7 +64,6 @@ wire [`DATA_WIDTH - 1:0] store_w;
 wire [`ADDR_WIDTH - 1:0] lsaddr_w;
 chinx_stage2 stage2(
     .clk(clk),
-    .mulclk(mulclk),
     .rst(rst),
     .pc_i(pc_w),
     .instr_i(instr_w),

@@ -41,7 +41,7 @@ chinx_pc pc(.clk(clk),
             .pc_i(pci_w),
             .pc_o(pco_w));
             
-rom32 instrmem(.a(pco_w[8:0]), .spo(instr_o));
+rom32 instrmem(.a(pco_w), .spo(instr_o));
 
 wire [`ADDR_WIDTH - 1:0] pca_w; // connect accu and mux2
 

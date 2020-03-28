@@ -20,11 +20,11 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module chinx_alu(
-    input wire mulclk,
     input wire [`ALU_SRC_WIDTH - 1:0] alusrca_i,
     input wire [`ALU_SRC_WIDTH - 1:0] alusrcb_i,
     input wire [`DATA_WIDTH - 1:0] rdata0_i,
     input wire [`DATA_WIDTH - 1:0] rdata1_i,
+    input wire [`DATA_WIDTH - 1:0] load_i,
     input wire [`DATA_WIDTH - 1:0] extimm_i,
     input wire [`ADDR_WIDTH - 1:0] pc_i,
     
@@ -40,7 +40,7 @@ chinx_mux4 alusrca(
     .data0_i(rdata0_i),
     .data1_i(rdata1_i),
     .data2_i(extimm_i),
-    .data3_i({22'd0, pc_i}),
+    .data3_i({24'd0, pc_i}),
     .data_o(a_w)
 );
 
@@ -70,9 +70,8 @@ suber SUB(
 
 wire [`HILO_WIDTH - 1:0] mul_w;
 muler MUL(
-    .CLK(mulclk),
-    .A(a_w),
-    .B(b_w),
+    .A(a_w[7:0]),
+    .B(b_w[7:0]),
     .P(mul_w)
 );
 
@@ -89,7 +88,7 @@ chinx_mux8 result(
     .data_o(result_o)
 );
 
-assign lo_o = mul_w[31:0];
-assign hi_o = mul_w[63:32];
+assign lo_o = (mul_w[7] == 1'b1) ? {24'hffff_ff, mul_w[7:0]} : {24'h0000_00, mul_w[7:0]};
+assign hi_o = (mul_w[15] == 1'b1) ? {24'hffff_ff, mul_w[15:8]} : {24'h0000_00, mul_w[15:8]};
 
 endmodule

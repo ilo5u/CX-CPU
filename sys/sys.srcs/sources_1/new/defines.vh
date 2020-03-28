@@ -4,11 +4,11 @@
 `define _RISC_32_
 `ifdef _RISC_32_
 `define DATA_WIDTH 32
-`define HILO_WIDTH 64
+`define HILO_WIDTH 16
 `elsif _RISC_64_
 `define DATA_WIDTH 64
 `endif
-`define ADDR_WIDTH 10
+`define ADDR_WIDTH 8
 
 `define LEV_L 1'b0
 `define LEV_H 1'b1
