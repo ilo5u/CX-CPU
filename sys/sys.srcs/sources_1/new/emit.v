@@ -59,11 +59,14 @@ module chinx_emit(
 );
 
 // Arith and Logic operations (ALO)
+localparam NOP = `INSTR_OPC_WIDTH'h00;
 localparam ALO_BEGIN = `INSTR_OPC_WIDTH'h01;
 localparam ADD = `INSTR_OPC_WIDTH'h02;
 
 localparam ALO_SIMM = `INSTR_OPC_WIDTH'h08;
 localparam ADDI = `INSTR_OPC_WIDTH'h09;
+localparam LUI = `INSTR_OPC_WIDTH'h0a;
+localparam SLL = `INSTR_OPC_WIDTH'h0b;
 
 localparam ALO_UIMM = `INSTR_OPC_WIDTH'h10;
 localparam ORI = `INSTR_OPC_WIDTH'h11;

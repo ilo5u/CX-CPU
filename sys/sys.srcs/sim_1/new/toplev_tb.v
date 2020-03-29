@@ -26,12 +26,12 @@ reg clk;
 reg rst;
 initial begin
     clk = 0;
-    forever #5 clk = ~clk;
+    forever #1 clk = ~clk;
 end
 initial begin
     rst = 0;
-    #12 rst = ~rst;
-    #15 rst = ~rst;
+    #2 rst = ~rst;
+    #3 rst = ~rst;
 end
 wire [`ADDR_WIDTH - 1:0] pc;
 wire [`DATA_WIDTH - 1:0] instr;
