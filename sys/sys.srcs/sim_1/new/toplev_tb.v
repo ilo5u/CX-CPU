@@ -22,27 +22,26 @@
 
 module toplev_tb();
 
-reg clk;
 reg rst;
-initial begin
-    clk = 0;
-    forever #1 clk = ~clk;
-end
 initial begin
     rst = 0;
     #2 rst = ~rst;
     #3 rst = ~rst;
 end
+reg clk;
+initial begin
+    clk = 0;
+    forever #1 clk = ~clk;
+end
+
 wire [`ADDR_WIDTH - 1:0] pc;
 wire [`DATA_WIDTH - 1:0] instr;
-wire stall;
 
 chinx_pipeline pipeline(
     .clk(clk),
     .rst(rst),
     .pc(pc),
-    .instr(instr),
-    .stall(stall)
+    .instr(instr)
 );
 
 endmodule

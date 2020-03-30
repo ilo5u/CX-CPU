@@ -18,6 +18,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
+`include "defines.vh"
 
 module chinx_alu(
     input wire [`ALU_SRC_WIDTH - 1:0] alusrca_i,
@@ -50,7 +51,7 @@ chinx_mux4 alusrcb(
     .data0_i(rdata0_i),
     .data1_i(rdata1_i),
     .data2_i(extimm_i),
-    .data3_i(pc_i),
+    .data3_i({24'd0, pc_i}),
     .data_o(b_w)
 );
 

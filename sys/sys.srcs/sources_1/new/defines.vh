@@ -37,6 +37,17 @@
 `define ALU_RES_XOR 3'b110
 `define ALU_RES_NOT 3'b111
 
+`define BRANCH_SRC_WIDTH 2
+`define BRANCH_SRC_NOOP 2'b00
+`define BRANCH_SRC_JUMP 2'b01
+`define BRANCH_SRC_EPC 2'b10
+
+`define STD_SRC_DATA0 1'b0
+`define STD_SRC_CACHE 1'b1
+
+`define STA_SRC_ALU 1'b0
+`define STA_SRC_CACHE 1'b1
+
 `define MEM_LOAD 1'b0
 `define MEM_STORE 1'b1
 `define EXT_SIGNED 1'b0

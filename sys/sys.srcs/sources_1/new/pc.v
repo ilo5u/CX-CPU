@@ -23,18 +23,13 @@
 module chinx_pc(
     input wire clk,
     input wire rst,
-    input wire stall,
-
     input wire [`ADDR_WIDTH - 1:0] pc_i,
-
     output reg [`ADDR_WIDTH - 1:0] pc_o
 );
 
-always @(posedge clk) begin
+always @(negedge clk) begin
     if (rst == `LEV_H) begin
         pc_o <= `ADDR_WIDTH'd0;
-    end else if (stall == `LEV_H) begin
-        pc_o <= pc_o;
     end else begin
         pc_o <= pc_i;
     end

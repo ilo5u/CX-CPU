@@ -23,9 +23,8 @@
 module chinx_stage1(
     input wire clk,
     input wire rst,
-    input wire stall, // pipeline stall signal
-
-    input wire be_i, // select the next pc value
+    input wire [`BRANCH_SRC_WIDTH - 1:0] bsrc_i, // select the next pc value
+    input wire [`ADDR_WIDTH - 1:0] epc_i, // epc used for stall pipeline
     input wire [`ADDR_WIDTH - 1:0] baddr_i, // branch address
 
     output wire [`ADDR_WIDTH - 1:0] pc_o, // pc in IF stage
@@ -34,26 +33,22 @@ module chinx_stage1(
 
 wire [`ADDR_WIDTH - 1:0] pci_w; // connect nextpc and pc
 wire [`ADDR_WIDTH - 1:0] pco_w; // connect pc and instrmem and accu
-
 chinx_pc pc(.clk(clk),
             .rst(rst),
-            .stall(stall),
             .pc_i(pci_w),
             .pc_o(pco_w));
-            
+// fetch instruction
 rom32 instrmem(.a(pco_w), .spo(instr_o));
-
-wire [`ADDR_WIDTH - 1:0] pca_w; // connect accu and mux2
-
 // pca_w = pco_w + 1
-chinx_accu accu(.num_i(pco_w), .num_o(pca_w));
-
+wire [`ADDR_WIDTH - 1:0] pca_w;
+add1 follow(.A(pco_w), .S(pca_w));
 // select the branch address or pc+1 as the next pc
-chinx_mux2 nextpc(.sel_i(be_i),
+chinx_mux4 nextpc(.sel_i(bsrc_i),
                   .data0_i(pca_w),
                   .data1_i(baddr_i),
+                  .data2_i(epc_i),
+                  .data3_i(epc_i),
                   .data_o(pci_w));
-
 // send out current pc value
 assign pc_o = pco_w;
 

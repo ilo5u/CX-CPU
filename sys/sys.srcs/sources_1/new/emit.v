@@ -23,8 +23,7 @@
 module chinx_emit(
     input wire clk,
     input wire rst,
-
-    input wire [`ADDR_WIDTH - 1:0] pc_i,
+//    input wire [`ADDR_WIDTH - 1:0] pc_i,
     input wire [`INSTR_WIDTH - 1:0] instr_i,
     // from HI/LO register
     input wire [`DATA_WIDTH - 1:0] hi_i,
@@ -45,61 +44,58 @@ module chinx_emit(
 
     output reg [`ALU_SRC_WIDTH - 1:0] alusrca_o, // Rb, Rc, ExtImm
     output reg [`ALU_SRC_WIDTH - 1:0] alusrcb_o, // Rb, Rc, ExtImm
-
     // Arith: ADD, SUB, MEM, EXT
     // Logic: AND, OR, XOR, NOT
     output reg [`ALU_RES_WIDTH - 1:0] alures_o,
-
     // Branch
-    output reg be_o,
-
-    // stall the pipeline
+    // may stall the pipeline
     // by sending this signal to stage1
-    output reg stall
+    output reg [`BRANCH_SRC_WIDTH - 1:0] bsrc_o,
+//    output reg [`ADDR_WIDTH - 1:0] pc_o,
+    // Load/Store cache
+    output reg stasrc_o,
+    output reg stdsrc_o,
+    // handle the effects when stall the pipeline
+    output reg [`INSTR_WIDTH - 1:0] instr_o
 );
 
 // Arith and Logic operations (ALO)
 localparam NOP = `INSTR_OPC_WIDTH'h00;
 localparam ALO_BEGIN = `INSTR_OPC_WIDTH'h01;
 localparam ADD = `INSTR_OPC_WIDTH'h02;
-
 localparam ALO_SIMM = `INSTR_OPC_WIDTH'h08;
 localparam ADDI = `INSTR_OPC_WIDTH'h09;
 localparam LUI = `INSTR_OPC_WIDTH'h0a;
 localparam SLL = `INSTR_OPC_WIDTH'h0b;
-
 localparam ALO_UIMM = `INSTR_OPC_WIDTH'h10;
 localparam ORI = `INSTR_OPC_WIDTH'h11;
 localparam ALO_END = `INSTR_OPC_WIDTH'h1F;
-
 // Brach operations (BRO)
 localparam BRO_BEGIN = `INSTR_OPC_WIDTH'h20;
 localparam RET = `INSTR_OPC_WIDTH'h21;
 localparam JR = `INSTR_OPC_WIDTH'h22;
 localparam BRO_END = `INSTR_OPC_WIDTH'h2F;
-
 // Load and Store operations (LSO)
 localparam LSO_BEGIN = `INSTR_OPC_WIDTH'h30;
 localparam LW = `INSTR_OPC_WIDTH'h31;
 localparam LSO_STORE = `INSTR_OPC_WIDTH'h38;
 localparam SW = `INSTR_OPC_WIDTH'h39;
 localparam LSO_END = `INSTR_OPC_WIDTH'h3F;
-
+// decode instruction
 wire [`INSTR_OPC_WIDTH - 1:0] opcode_w = instr_i[31:26];
 wire [`REG_ADDR_WIDTH - 1:0] ra_w = instr_i[25:21];
 wire [`REG_ADDR_WIDTH - 1:0] rb_w = instr_i[20:16];
 wire [`REG_ADDR_WIDTH - 1:0] rc_w = instr_i[15:11];
 wire [`INSTR_IMM_WIDTH - 1:0] imm_w = instr_i[15:0];
-wire [`INSTR_BADDR_WIDTH - 1:0] baddr_w = instr_i[25:0];
-
+// wire [`INSTR_BADDR_WIDTH - 1:0] baddr_w = instr_i[25:0];
 // handle conflicts when emit 
 // parallel operations with load/store operation
 reg [`REG_ADDR_WIDTH - 1:0] conflict_r; // used for lw and mul operation
 reg ls_busy_r;
 reg ls_period_r;
-
+reg ls_op_r;
 // handle branch effects
-reg br_flush_r;
+// reg br_flush_r;
 
 always @(posedge clk) begin
     if (rst == `LEV_H) begin
@@ -117,21 +113,21 @@ always @(posedge clk) begin
         alusrca_o <= `ALU_SRC_R0;
         alusrcb_o <= `ALU_SRC_R1;
         alures_o <= `ALU_RES_ADD;
-        be_o <= `LEV_L;
-        stall <= `LEV_L;
+        bsrc_o <= `BRANCH_SRC_NOOP;
         // internal signals
         conflict_r <= `REG_ZERO;
         ls_busy_r <= `LEV_L;
         ls_period_r <= `LEV_L;
-        br_flush_r <= `LEV_L;
+        ls_op_r <= `MEM_LOAD;
+        // br_flush_r <= `LEV_L;
     // end else if (flush == `LEV_H) begin
     //     // dismiss the write effects
     //     wbe_o <= `LEV_L;
-    end else if (br_flush_r == `LEV_H) begin
-        br_flush_r <= `LEV_L;
-        // dismiss the write effects
-        wbe_o <= `LEV_L;
-        be_o <= `LEV_L;
+    // end else if (br_flush_r == `LEV_H) begin
+    //     br_flush_r <= `LEV_L;
+    //     // dismiss the write effects
+    //     wbe_o <= `LEV_L;
+    //     bsrc_o <= `BRANCH_SRC_NOOP;
     end else begin
         imm_o <= imm_w;
         if ((opcode_w > ALO_BEGIN) && (opcode_w < ALO_END)) begin
@@ -143,41 +139,49 @@ always @(posedge clk) begin
             raddr0_o <= rb_w;
             raddr1_o <= rc_w;
             // all operations need to write back
-            wbe_o <= `LEV_H;
+            // wbe_o <= `LEV_H;
             // no load and store operations
             memce_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
                 `LEV_H : `LEV_L;
+            stasrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `STA_SRC_CACHE : `STA_SRC_ALU;
+            stdsrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `STD_SRC_CACHE : `STD_SRC_DATA0;
             // set the extension model of immediate number
             immext_o <= (opcode_w < ALO_UIMM) ? `EXT_SIGNED : `EXT_UNSIGNED;
             // set the data flow of sources sent to ALU
             alusrca_o <= `ALU_SRC_R0;
             alusrcb_o <= (opcode_w < ALO_SIMM) ? `ALU_SRC_R1 : `ALU_SRC_IMM;
             // set the data flow of ALU result
-            alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+            alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) ?
                 `ALU_RES_MEM : ((opcode_w == ADD || opcode_w == ADDI) ?
                     `ALU_RES_ADD : `ALU_RES_OR);
-            // do not branch
-            be_o <= `LEV_L;
-            if (ls_busy_r == `LEV_H && ls_period_r == `LEV_H) begin
+            if (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) begin
                 // load operation will occupy the WB stage
-                // stall the stage1 to keep the pc value
-                stall <= `LEV_H;
+                // stall the stage1 to keep the epc value
+                wbe_o <= `LEV_H;
+                bsrc_o <= `BRANCH_SRC_EPC;
                 ls_busy_r <= `LEV_L;
-            end else if (ls_busy_r == `LEV_H && ra_w == conflict_r ) begin
+                ls_op_r <= `MEM_STORE;
+            end else if (ls_busy_r == `LEV_H && ra_w == conflict_r) begin
                 // WAW conflict
-                // stall the stage1 to keep the pc value
-                stall <= `LEV_H;
-            end else if (ls_busy_r == `LEV_H && rb_w == conflict_r ) begin
+                // stall the stage1 to keep the epc value
+                wbe_o <= `LEV_L;
+                bsrc_o <= `BRANCH_SRC_EPC;
+            end else if (ls_busy_r == `LEV_H && rb_w == conflict_r) begin
                 // RAW conflict
-                // stall the stage1 to keep the pc value
-                stall <= `LEV_H;
+                // stall the stage1 to keep the epc value
+                wbe_o <= `LEV_L;
+                bsrc_o <= `BRANCH_SRC_EPC;
             end else if (ls_busy_r == `LEV_H && rc_w == conflict_r
                 && (opcode_w < ALO_SIMM)) begin
                 // RAW conflict
-                // stall the stage1 to keep the pc value
-                stall <= `LEV_H;
+                // stall the stage1 to keep the epc value
+                wbe_o <= `LEV_L;
+                bsrc_o <= `BRANCH_SRC_EPC;
             end else begin
-                stall <= `LEV_L; // no load/store operations before or no conflict
+                wbe_o <= `LEV_H;
+                bsrc_o <= `BRANCH_SRC_NOOP; // no load/store operations before or no conflict
                 conflict_r <= `REG_ADDR_WIDTH'd0; // release
             end
         end else if ((opcode_w > BRO_BEGIN) && (opcode_w < BRO_END)) begin
@@ -187,7 +191,7 @@ always @(posedge clk) begin
             // ret,jr
             // no operations need to write back, but pc register in Co-processor
             // except that the load operation is done
-            wbe_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H) ? // load
+            wbe_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) ? // load
                 `LEV_H : `LEV_L;
             waddr_o <= conflict_r;
             // set the data flow from regfiles
@@ -196,23 +200,26 @@ always @(posedge clk) begin
             // no load and store operations
             memce_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
                 `LEV_H : `LEV_L;
+            stasrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `STA_SRC_CACHE : `STA_SRC_ALU;
+            stdsrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `STD_SRC_CACHE : `STD_SRC_DATA0;
             // set the extension model of immediate number
             immext_o <= `EXT_SIGNED;
             // set the data flow sources and result of ALU
             alusrca_o <= `ALU_SRC_R0;
             alusrcb_o <= `ALU_SRC_IMM;
-            alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+            alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) ?
                 `ALU_RES_MEM : `ALU_RES_ADD;
             // branch
-            be_o <= `LEV_H;
-            br_flush_r <= `LEV_H;
+            bsrc_o <= `BRANCH_SRC_JUMP;
         end else if ((opcode_w > LSO_BEGIN) && (opcode_w < LSO_END)) begin
             // lw,sw
             // load operations need to write back
             // wbe_o <= (opcode_w < LSO_STORE) ? `LEV_H : `LEV_L;
             // but not the next period
             // except that the last load operation is done
-            wbe_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H) ? // load
+            wbe_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) ? // load
                 `LEV_H : `LEV_L;
             waddr_o <= conflict_r;
             // set the data flow from regfiles
@@ -220,31 +227,40 @@ always @(posedge clk) begin
             raddr1_o <= rb_w;
             // load and store operations
             memce_o <= `LEV_H;
-            memop_o <= (opcode_w < LSO_STORE) ? `MEM_LOAD : `MEM_STORE;
+            memop_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                memop_o : ((opcode_w < LSO_STORE) ? `MEM_LOAD : `MEM_STORE);
             memod_o <= `MEM_OPND_WORD;
+            stasrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `STA_SRC_CACHE : `STA_SRC_ALU;
+            stdsrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                `STD_SRC_CACHE : `STD_SRC_DATA0;
             // set the extension model of immediate number
             immext_o <= `EXT_SIGNED;
             // set the data flow sources and result of ALU
             alusrca_o <= `ALU_SRC_R1;
             alusrcb_o <= `ALU_SRC_IMM;
-            alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+            alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) ?
                 `ALU_RES_MEM : `ALU_RES_ADD;
-            // do not branch
-            be_o <= `LEV_L;
             if (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) begin
                 // the last load/store is runnig now
-                stall <= `LEV_H;
-                ls_period_r = `LEV_H;
+                bsrc_o <= `BRANCH_SRC_EPC;
+                ls_period_r <= `LEV_H;
+            end else if (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) begin
+                // the last load/store is runnig now
+                bsrc_o <= `BRANCH_SRC_EPC;
+                ls_period_r <= `LEV_H;
+                ls_op_r <= `MEM_STORE;
             end else begin
                 // the last load/store operation is done
-                stall <= `LEV_L;
+                bsrc_o <= `BRANCH_SRC_NOOP;
                 conflict_r <= (opcode_w < LSO_STORE) ? 
-                    `REG_ADDR_WIDTH'd0 : ra_w; // release
+                    ra_w : `REG_ADDR_WIDTH'd0; // hold
                 ls_period_r <= `LEV_L;
                 ls_busy_r <= `LEV_H;
+                ls_op_r <= (opcode_w < LSO_STORE) ? `MEM_LOAD : `MEM_STORE;
             end
         end
     end
 end
-
+//assign pc_o = pc_i;
 endmodule

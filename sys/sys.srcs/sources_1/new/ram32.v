@@ -38,7 +38,7 @@ localparam halfu = `MEM_OPND_WIDTH'd2;
 localparam byte = `MEM_OPND_WIDTH'd3;
 localparam byteu = `MEM_OPND_WIDTH'd4;
 
-reg [7:0] block[255:0];
+reg [7:0] block[0:255];
 
 always @(posedge ramclk) begin
     if (ce == `LEV_H) begin
@@ -64,8 +64,8 @@ always @(posedge ramclk) begin
         default: begin
             block[addr_i] <= data_i[7:0];
             block[addr_i+1] <= data_i[15:8];
-            block[addr_i+1] <= data_i[23:16];
-            block[addr_i+1] <= data_i[31:24];
+            block[addr_i+2] <= data_i[23:16];
+            block[addr_i+3] <= data_i[31:24];
         end
         endcase
         end
