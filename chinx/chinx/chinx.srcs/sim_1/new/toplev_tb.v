@@ -25,13 +25,14 @@ module toplev_tb();
 reg rst;
 initial begin
     rst = 0;
-    #2 rst = ~rst;
     #3 rst = ~rst;
+    #4 rst = ~rst;
 end
+
 reg clk;
 initial begin
     clk = 0;
-    forever #1 clk = ~clk;
+    forever #2 clk = ~clk;
 end
 
 wire [`ADDR_WIDTH - 1:0] pc;

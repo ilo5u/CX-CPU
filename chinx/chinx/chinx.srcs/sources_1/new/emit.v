@@ -26,8 +26,8 @@ module chinx_emit(
 //    input wire [`ADDR_WIDTH - 1:0] pc_i,
     input wire [`INSTR_WIDTH - 1:0] instr_i,
     // from HI/LO register
-    input wire [`DATA_WIDTH - 1:0] hi_i,
-    input wire [`DATA_WIDTH - 1:0] lo_i,
+    input wire [`HILO_WIDTH - 1:0] hi_i,
+    input wire [`HILO_WIDTH - 1:0] lo_i,
     // write back to regfiles
     output reg [`REG_ADDR_WIDTH - 1:0] waddr_o,
     output reg [`REG_ADDR_WIDTH - 1:0] raddr0_o,
@@ -63,10 +63,14 @@ module chinx_emit(
 localparam NOP = `INSTR_OPC_WIDTH'h00;
 localparam ALO_BEGIN = `INSTR_OPC_WIDTH'h01;
 localparam ADD = `INSTR_OPC_WIDTH'h02;
+localparam SUB = `INSTR_OPC_WIDTH'h03;
+localparam MUL = `INSTR_OPC_WIDTH'h04;
 localparam ALO_SIMM = `INSTR_OPC_WIDTH'h08;
 localparam ADDI = `INSTR_OPC_WIDTH'h09;
 localparam LUI = `INSTR_OPC_WIDTH'h0a;
 localparam SLL = `INSTR_OPC_WIDTH'h0b;
+localparam MTHI = `INSTR_OPC_WIDTH'h0e;
+localparam MTLO = `INSTR_OPC_WIDTH'h0f;
 localparam ALO_UIMM = `INSTR_OPC_WIDTH'h10;
 localparam ORI = `INSTR_OPC_WIDTH'h11;
 localparam ALO_END = `INSTR_OPC_WIDTH'h1F;
@@ -129,8 +133,9 @@ always @(posedge clk) begin
     //     wbe_o <= `LEV_L;
     //     bsrc_o <= `BRANCH_SRC_NOOP;
     end else begin
-        imm_o <= imm_w;
-        if ((opcode_w > ALO_BEGIN) && (opcode_w < ALO_END)) begin
+//        imm_o <= imm_w;
+        if ((opcode_w == NOP) ||
+            (opcode_w > ALO_BEGIN) && (opcode_w < ALO_END)) begin
             ls_period_r <= ~ls_period_r; // used when load/store is running
             // add,addi,ori
             // set the data flow from regfiles
@@ -149,13 +154,16 @@ always @(posedge clk) begin
                 `STD_SRC_CACHE : `STD_SRC_DATA0;
             // set the extension model of immediate number
             immext_o <= (opcode_w < ALO_UIMM) ? `EXT_SIGNED : `EXT_UNSIGNED;
+            imm_o <= (opcode_w == MTHI) ? hi_i : ((opcode_w == MTLO) ?
+                lo_i : imm_w);
             // set the data flow of sources sent to ALU
             alusrca_o <= `ALU_SRC_R0;
             alusrcb_o <= (opcode_w < ALO_SIMM) ? `ALU_SRC_R1 : `ALU_SRC_IMM;
             // set the data flow of ALU result
             alures_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) ?
                 `ALU_RES_MEM : ((opcode_w == ADD || opcode_w == ADDI) ?
-                    `ALU_RES_ADD : `ALU_RES_OR);
+                    `ALU_RES_ADD : ((opcode_w == MTHI || opcode_w == MTLO) ?
+                    `ALU_RES_EXT : `ALU_RES_OR));
             if (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) begin
                 // load operation will occupy the WB stage
                 // stall the stage1 to keep the epc value
@@ -206,6 +214,7 @@ always @(posedge clk) begin
                 `STD_SRC_CACHE : `STD_SRC_DATA0;
             // set the extension model of immediate number
             immext_o <= `EXT_SIGNED;
+            imm_o <= imm_w;
             // set the data flow sources and result of ALU
             alusrca_o <= `ALU_SRC_R0;
             alusrcb_o <= `ALU_SRC_IMM;
@@ -230,12 +239,14 @@ always @(posedge clk) begin
             memop_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
                 memop_o : ((opcode_w < LSO_STORE) ? `MEM_LOAD : `MEM_STORE);
             memod_o <= `MEM_OPND_WORD;
-            stasrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+            stasrc_o <= ((ls_busy_r == `LEV_H && ls_period_r == `LEV_L)
+                || (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD)) ?
                 `STA_SRC_CACHE : `STA_SRC_ALU;
             stdsrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
                 `STD_SRC_CACHE : `STD_SRC_DATA0;
             // set the extension model of immediate number
             immext_o <= `EXT_SIGNED;
+            imm_o <= imm_w;
             // set the data flow sources and result of ALU
             alusrca_o <= `ALU_SRC_R1;
             alusrcb_o <= `ALU_SRC_IMM;

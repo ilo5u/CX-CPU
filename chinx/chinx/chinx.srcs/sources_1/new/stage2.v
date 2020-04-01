@@ -41,8 +41,8 @@ module chinx_stage2(
 //    output wire [`ADDR_WIDTH - 1:0] pc_o
 );
 
-wire [`DATA_WIDTH - 1:0] hio_w;
-wire [`DATA_WIDTH - 1:0] loo_w;
+wire [`HILO_WIDTH - 1:0] hio_w;
+wire [`HILO_WIDTH - 1:0] loo_w;
 wire hle_w;
 wire [`REG_ADDR_WIDTH - 1:0] waddr_w;
 wire [`REG_ADDR_WIDTH - 1:0] raddr0_w;
@@ -115,8 +115,8 @@ chinx_ext32 ext32(
     .imm32_o(imm32_w)
 );
 
-wire [`DATA_WIDTH - 1:0] lo_w;
-wire [`DATA_WIDTH - 1:0] hi_w;
+wire [`HILO_WIDTH - 1:0] lo_w;
+wire [`HILO_WIDTH - 1:0] hi_w;
 chinx_alu alu(
     .alusrca_i(alusrca_w),
     .alusrcb_i(alusrcb_w),

@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="983000000fs"></ZoomStartTime>
-      <ZoomEndTime time="1003400001fs"></ZoomEndTime>
-      <Cursor1Time time="989050000fs"></Cursor1Time>
+      <ZoomStartTime time="933640000fs"></ZoomStartTime>
+      <ZoomEndTime time="1007490001fs"></ZoomEndTime>
+      <Cursor1Time time="987990000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="220"></NameColumnWidth>
-      <ValueColumnWidth column_width="198"></ValueColumnWidth>
+      <ValueColumnWidth column_width="156"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="4" />
+   <WVObjectSize size="9" />
    <wvobject fp_name="/toplev_tb/rst" type="logic">
       <obj_property name="ElementShortName">rst</obj_property>
       <obj_property name="ObjectShortName">rst</obj_property>
@@ -28,12 +28,184 @@
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/toplev_tb/pc" type="array">
-      <obj_property name="ElementShortName">pc[7:0]</obj_property>
-      <obj_property name="ObjectShortName">pc[7:0]</obj_property>
+   <wvobject fp_name="/toplev_tb/pipeline/stage2/pc_i" type="array">
+      <obj_property name="ElementShortName">pc_i[7:0]</obj_property>
+      <obj_property name="ObjectShortName">pc_i[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/toplev_tb/instr" type="array">
-      <obj_property name="ElementShortName">instr[31:0]</obj_property>
-      <obj_property name="ObjectShortName">instr[31:0]</obj_property>
+   <wvobject fp_name="/toplev_tb/pipeline/stage2/instr_i" type="array">
+      <obj_property name="ElementShortName">instr_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">instr_i[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/toplev_tb/pipeline/cop/epc" type="array">
+      <obj_property name="ElementShortName">epc[7:0]</obj_property>
+      <obj_property name="ObjectShortName">epc[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="group178" type="group">
+      <obj_property name="label">alu</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/alu/alusrca_i" type="array">
+         <obj_property name="ElementShortName">alusrca_i[1:0]</obj_property>
+         <obj_property name="ObjectShortName">alusrca_i[1:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/alu/alusrcb_i" type="array">
+         <obj_property name="ElementShortName">alusrcb_i[1:0]</obj_property>
+         <obj_property name="ObjectShortName">alusrcb_i[1:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/alu/alures_i" type="array">
+         <obj_property name="ElementShortName">alures_i[2:0]</obj_property>
+         <obj_property name="ObjectShortName">alures_i[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="group179" type="group">
+         <obj_property name="label">data</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="/toplev_tb/pipeline/stage2/alu/rdata0_i" type="array">
+            <obj_property name="ElementShortName">rdata0_i[31:0]</obj_property>
+            <obj_property name="ObjectShortName">rdata0_i[31:0]</obj_property>
+            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/toplev_tb/pipeline/stage2/alu/rdata1_i" type="array">
+            <obj_property name="ElementShortName">rdata1_i[31:0]</obj_property>
+            <obj_property name="ObjectShortName">rdata1_i[31:0]</obj_property>
+            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/toplev_tb/pipeline/stage2/alu/load_i" type="array">
+            <obj_property name="ElementShortName">load_i[31:0]</obj_property>
+            <obj_property name="ObjectShortName">load_i[31:0]</obj_property>
+            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/toplev_tb/pipeline/stage2/alu/extimm_i" type="array">
+            <obj_property name="ElementShortName">extimm_i[31:0]</obj_property>
+            <obj_property name="ObjectShortName">extimm_i[31:0]</obj_property>
+            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/toplev_tb/pipeline/stage2/alu/result_o" type="array">
+            <obj_property name="ElementShortName">result_o[31:0]</obj_property>
+            <obj_property name="ObjectShortName">result_o[31:0]</obj_property>
+            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/toplev_tb/pipeline/stage2/alu/mul_w" type="array">
+            <obj_property name="ElementShortName">mul_w[31:0]</obj_property>
+            <obj_property name="ObjectShortName">mul_w[31:0]</obj_property>
+            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group23" type="group">
+      <obj_property name="label">regfiles</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/regfiles/we_i" type="logic">
+         <obj_property name="ElementShortName">we_i</obj_property>
+         <obj_property name="ObjectShortName">we_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/regfiles/waddr_i" type="array">
+         <obj_property name="ElementShortName">waddr_i[4:0]</obj_property>
+         <obj_property name="ObjectShortName">waddr_i[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/regfiles/wdata_i" type="array">
+         <obj_property name="ElementShortName">wdata_i[31:0]</obj_property>
+         <obj_property name="ObjectShortName">wdata_i[31:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/regfiles/raddr0_i" type="array">
+         <obj_property name="ElementShortName">raddr0_i[4:0]</obj_property>
+         <obj_property name="ObjectShortName">raddr0_i[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/regfiles/raddr1_i" type="array">
+         <obj_property name="ElementShortName">raddr1_i[4:0]</obj_property>
+         <obj_property name="ObjectShortName">raddr1_i[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/regfiles/rdata0_o" type="array">
+         <obj_property name="ElementShortName">rdata0_o[31:0]</obj_property>
+         <obj_property name="ObjectShortName">rdata0_o[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FF0000</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/regfiles/rdata1_o" type="array">
+         <obj_property name="ElementShortName">rdata1_o[31:0]</obj_property>
+         <obj_property name="ObjectShortName">rdata1_o[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FF0000</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group31" type="group">
+      <obj_property name="label">ram32</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/toplev_tb/pipeline/ram32/ramclk" type="logic">
+         <obj_property name="ElementShortName">ramclk</obj_property>
+         <obj_property name="ObjectShortName">ramclk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/ram32/ce" type="logic">
+         <obj_property name="ElementShortName">ce</obj_property>
+         <obj_property name="ObjectShortName">ce</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/ram32/rwe" type="logic">
+         <obj_property name="ElementShortName">rwe</obj_property>
+         <obj_property name="ObjectShortName">rwe</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/ram32/opnd" type="array">
+         <obj_property name="ElementShortName">opnd[2:0]</obj_property>
+         <obj_property name="ObjectShortName">opnd[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/ram32/addr_i" type="array">
+         <obj_property name="ElementShortName">addr_i[7:0]</obj_property>
+         <obj_property name="ObjectShortName">addr_i[7:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/ram32/data_i" type="array">
+         <obj_property name="ElementShortName">data_i[31:0]</obj_property>
+         <obj_property name="ObjectShortName">data_i[31:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/ram32/data_o" type="array">
+         <obj_property name="ElementShortName">data_o[31:0]</obj_property>
+         <obj_property name="ObjectShortName">data_o[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FF0000</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group36" type="group">
+      <obj_property name="label">emiter</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/emit/conflict_r" type="array">
+         <obj_property name="ElementShortName">conflict_r[4:0]</obj_property>
+         <obj_property name="ObjectShortName">conflict_r[4:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/emit/ls_busy_r" type="logic">
+         <obj_property name="ElementShortName">ls_busy_r</obj_property>
+         <obj_property name="ObjectShortName">ls_busy_r</obj_property>
+         <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/emit/ls_period_r" type="logic">
+         <obj_property name="ElementShortName">ls_period_r</obj_property>
+         <obj_property name="ObjectShortName">ls_period_r</obj_property>
+         <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/toplev_tb/pipeline/stage2/emit/ls_op_r" type="logic">
+         <obj_property name="ElementShortName">ls_op_r</obj_property>
+         <obj_property name="ObjectShortName">ls_op_r</obj_property>
+         <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
    </wvobject>
 </wave_config>

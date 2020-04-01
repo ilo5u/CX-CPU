@@ -1,0 +1,2 @@
+Breakpoint File Version 1.0
+56 true C:/Users/livew/Desktop/CX/chinx/ram32/ram32.srcs/sources_1/new/ram32.v

@@ -55,9 +55,9 @@
 
 //----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
 muler your_instance_name (
-  .A(A),  // input wire [7 : 0] A
-  .B(B),  // input wire [7 : 0] B
-  .P(P)  // output wire [15 : 0] P
+  .A(A),  // input wire [15 : 0] A
+  .B(B),  // input wire [15 : 0] B
+  .P(P)  // output wire [31 : 0] P
 );
 // INST_TAG_END ------ End INSTANTIATION Template ---------
 

@@ -31,8 +31,8 @@ module chinx_alu(
     
     input wire [`ALU_RES_WIDTH - 1:0] alures_i,
     output wire [`DATA_WIDTH - 1:0] result_o,
-    output wire [`DATA_WIDTH - 1:0] lo_o,
-    output wire [`DATA_WIDTH - 1:0] hi_o
+    output wire [`HILO_WIDTH - 1:0] lo_o,
+    output wire [`HILO_WIDTH - 1:0] hi_o
 );
 
 wire [`DATA_WIDTH - 1:0] a_w;
@@ -69,10 +69,10 @@ suber SUB(
     .S(sub_w)
 );
 
-wire [`HILO_WIDTH - 1:0] mul_w;
+wire [`DATA_WIDTH - 1:0] mul_w;
 muler MUL(
-    .A(a_w[7:0]),
-    .B(b_w[7:0]),
+    .A(a_w[`HILO_WIDTH - 1:0]),
+    .B(b_w[`HILO_WIDTH - 1:0]),
     .P(mul_w)
 );
 
@@ -89,7 +89,7 @@ chinx_mux8 result(
     .data_o(result_o)
 );
 
-assign lo_o = (mul_w[7] == 1'b1) ? {24'hffff_ff, mul_w[7:0]} : {24'h0000_00, mul_w[7:0]};
-assign hi_o = (mul_w[15] == 1'b1) ? {24'hffff_ff, mul_w[15:8]} : {24'h0000_00, mul_w[15:8]};
+assign lo_o = mul_w[15:0];
+assign hi_o = mul_w[31:16];
 
 endmodule

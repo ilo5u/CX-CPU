@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="rom32_synth_1" LaunchPart="xc7z010clg400-1" LaunchTime="1585709364">
+<GenRun Id="rom32_synth_1" LaunchPart="xc7z010clg400-1" LaunchTime="1585729219">
   <File Type="PA-TCL" Name="rom32.tcl"/>
   <File Type="RDS-PROPCONSTRS" Name="rom32_drc_synth.rpt"/>
   <File Type="REPORTS-TCL" Name="rom32_reports.tcl"/>
@@ -42,9 +42,7 @@
     </Config>
   </FileSet>
   <Strategy Version="1" Minor="2">
-    <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018">
-      <Desc>Vivado Synthesis Defaults</Desc>
-    </StratHandle>
+    <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
     <Step Id="synth_design"/>
   </Strategy>
 </GenRun>

@@ -23,15 +23,14 @@
 module chinx_hilo(
     input wire clk,
     input wire we,
-    input wire [`DATA_WIDTH - 1:0] hi_i,
-    input wire [`DATA_WIDTH - 1:0] lo_i,
-
-    output wire [`DATA_WIDTH - 1:0] hi_o,
-    output wire [`DATA_WIDTH - 1:0] lo_o
+    input wire [`HILO_WIDTH - 1:0] hi_i,
+    input wire [`HILO_WIDTH - 1:0] lo_i,
+    output wire [`HILO_WIDTH - 1:0] hi_o,
+    output wire [`HILO_WIDTH - 1:0] lo_o
 );
 
-reg [`DATA_WIDTH - 1:0] hi_r;
-reg [`DATA_WIDTH - 1:0] lo_r;
+reg [`HILO_WIDTH - 1:0] hi_r;
+reg [`HILO_WIDTH - 1:0] lo_r;
 
 always @(posedge clk) begin
     if (we == `LEV_H) begin

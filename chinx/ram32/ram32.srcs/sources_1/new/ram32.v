@@ -1,0 +1,79 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 2020/03/27
+// Design Name: 
+// Module Name: chinx_ram32
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+module chinx_ram32 #(
+parameter MEM_OPND_WIDTH = 3,
+           ADDR_WIDTH = 8,
+           DATA_WIDTH = 32)
+(
+    input wire ramclk,
+    input wire ce,
+    input wire rwe,
+    input wire [MEM_OPND_WIDTH - 1:0] opnd,
+
+    input wire [ADDR_WIDTH - 1:0] addr_i,
+    input wire [DATA_WIDTH - 1:0] data_i,
+
+    output reg [DATA_WIDTH - 1:0] data_o
+);
+
+localparam word = 0;
+localparam half = 1;
+localparam halfu = 2;
+localparam byte = 3;
+localparam byteu = 4;
+
+reg [7:0] block[0:255];
+integer i = 0;
+initial begin
+    for (i = 0; i < 256; i = i + 1)
+        block[i] <= 8'h0a;
+end
+
+always @(negedge ramclk) begin
+    if (ce == 1'b1) begin
+        if (rwe == 1'b0) begin
+        case (opnd)
+        half: data_o <= (block[addr_i+1][7] == 1'b1) ?
+            {16'hffff, block[addr_i+1], block[addr_i]} : {16'h0000, block[addr_i+1], block[addr_i]};
+        halfu: data_o <= {16'h0000, block[addr_i+1], block[addr_i]};
+        byte: data_o <= (block[addr_i][7] == 1'b1) ?
+            {24'hff_ffff, block[addr_i]} : {24'h00_0000, block[addr_i]};
+        byteu: data_o <= {24'h00_0000, block[addr_i]};
+        default: data_o <= {block[addr_i+3], block[addr_i+2], block[addr_i+1], block[addr_i]};
+        endcase
+        end else begin
+        case (opnd)
+        half: begin
+            {block[addr_i+1], block[addr_i]} <= data_i[15:0];
+        end
+        byte: begin
+            block[addr_i] <= data_i[7:0];
+        end
+        default: begin
+            {block[addr_i+3], block[addr_i+2], block[addr_i+1], block[addr_i]} <= data_i;
+        end
+        endcase
+        end
+    end
+end
+
+endmodule

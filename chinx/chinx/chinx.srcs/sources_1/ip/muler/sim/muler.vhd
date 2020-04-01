@@ -58,9 +58,9 @@ USE mult_gen_v12_0_14.mult_gen_v12_0_14;
 
 ENTITY muler IS
   PORT (
-    A : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-    B : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-    P : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
+    A : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+    B : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+    P : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
   );
 END muler;
 
@@ -92,11 +92,11 @@ ARCHITECTURE muler_arch OF muler IS
     );
     PORT (
       CLK : IN STD_LOGIC;
-      A : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-      B : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+      A : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+      B : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
       CE : IN STD_LOGIC;
       SCLR : IN STD_LOGIC;
-      P : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
+      P : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
     );
   END COMPONENT mult_gen_v12_0_14;
   ATTRIBUTE X_INTERFACE_INFO : STRING;
@@ -112,16 +112,16 @@ BEGIN
     GENERIC MAP (
       C_VERBOSITY => 0,
       C_MODEL_TYPE => 0,
-      C_OPTIMIZE_GOAL => 1,
+      C_OPTIMIZE_GOAL => 0,
       C_XDEVICEFAMILY => "zynq",
       C_HAS_CE => 0,
       C_HAS_SCLR => 0,
       C_LATENCY => 0,
-      C_A_WIDTH => 8,
+      C_A_WIDTH => 16,
       C_A_TYPE => 0,
-      C_B_WIDTH => 8,
+      C_B_WIDTH => 16,
       C_B_TYPE => 0,
-      C_OUT_HIGH => 15,
+      C_OUT_HIGH => 31,
       C_OUT_LOW => 0,
       C_MULT_TYPE => 0,
       C_CE_OVERRIDES_SCLR => 0,
