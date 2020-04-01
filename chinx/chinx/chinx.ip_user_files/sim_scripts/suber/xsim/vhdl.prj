@@ -1,0 +1,4 @@
+vhdl xil_defaultlib  \
+"../../../../chinx.srcs/sources_1/ip/suber/sim/suber.vhd" \
+
+nosort
