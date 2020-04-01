@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="rom32_synth_1" LaunchPart="xc7z010clg400-1" LaunchTime="1585709261">
+<GenRun Id="rom32_synth_1" LaunchPart="xc7z010clg400-1" LaunchTime="1585709364">
   <File Type="PA-TCL" Name="rom32.tcl"/>
   <File Type="RDS-PROPCONSTRS" Name="rom32_drc_synth.rpt"/>
   <File Type="REPORTS-TCL" Name="rom32_reports.tcl"/>
