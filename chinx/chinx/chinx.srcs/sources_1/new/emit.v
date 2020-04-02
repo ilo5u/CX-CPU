@@ -28,6 +28,10 @@ module chinx_emit(
     // from HI/LO register
     input wire [`HILO_WIDTH - 1:0] hi_i,
     input wire [`HILO_WIDTH - 1:0] lo_i,
+    // interruption
+    input wire ireq,
+    input wire [`ADDR_WIDTH - 1:0] iaddr_i,
+    // input wire zerof,
     // write back to regfiles
     output reg [`REG_ADDR_WIDTH - 1:0] waddr_o,
     output reg [`REG_ADDR_WIDTH - 1:0] raddr0_o,
@@ -39,7 +43,7 @@ module chinx_emit(
     output reg wbe_o, // write back to register files
     output reg hle_o, // write back to HI/LO register
     output reg memce_o, // need MEM stage [validate for 2 periods]
-    output reg memop_o, // load or store memory
+    // output reg memop_o, // load or store memory, replaced by memce_o
     output reg [`MEM_OPND_WIDTH - 1:0] memod_o, // word, half, halfu, byte, byteu
 
     output reg [`ALU_SRC_WIDTH - 1:0] alusrca_o, // Rb, Rc, ExtImm
@@ -100,7 +104,6 @@ reg ls_period_r;
 reg ls_op_r;
 // handle branch effects
 // reg br_flush_r;
-
 always @(posedge clk) begin
     if (rst == `LEV_H) begin
         // output signals
@@ -112,7 +115,6 @@ always @(posedge clk) begin
         wbe_o <= `LEV_L;
         hle_o <= `LEV_L;
         memce_o <= `LEV_L;
-        memop_o <= `MEM_LOAD;
         memod_o <= `MEM_OPND_WORD;
         alusrca_o <= `ALU_SRC_R0;
         alusrcb_o <= `ALU_SRC_R1;
@@ -123,18 +125,14 @@ always @(posedge clk) begin
         ls_busy_r <= `LEV_L;
         ls_period_r <= `LEV_L;
         ls_op_r <= `MEM_LOAD;
-        // br_flush_r <= `LEV_L;
-    // end else if (flush == `LEV_H) begin
-    //     // dismiss the write effects
-    //     wbe_o <= `LEV_L;
-    // end else if (br_flush_r == `LEV_H) begin
-    //     br_flush_r <= `LEV_L;
-    //     // dismiss the write effects
-    //     wbe_o <= `LEV_L;
-    //     bsrc_o <= `BRANCH_SRC_NOOP;
     end else begin
-//        imm_o <= imm_w;
-        if ((opcode_w == NOP) ||
+        if (ireq == `LEV_H) begin
+            // interruption
+            // if there are load/store instructions running now
+            // wait for it
+            bsrc_o <= (ls_busy_r == `LEV_H) ? `BRANCH_SRC_EPC : `BRANCH_SRC_IPC;
+            // TO DO
+        end else if ((opcode_w == NOP) ||
             (opcode_w > ALO_BEGIN) && (opcode_w < ALO_END)) begin
             ls_period_r <= ~ls_period_r; // used when load/store is running
             // add,addi,ori
@@ -146,7 +144,7 @@ always @(posedge clk) begin
             // all operations need to write back
             // wbe_o <= `LEV_H;
             // no load and store operations
-            memce_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+            memce_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L && ls_op_r == `MEM_STORE) ?
                 `LEV_H : `LEV_L;
             stasrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
                 `STA_SRC_CACHE : `STA_SRC_ALU;
@@ -206,7 +204,7 @@ always @(posedge clk) begin
             raddr0_o <= ra_w;
             raddr1_o <= rb_w;
             // no load and store operations
-            memce_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+            memce_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L && ls_op_r == `MEM_STORE) ?
                 `LEV_H : `LEV_L;
             stasrc_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
                 `STA_SRC_CACHE : `STA_SRC_ALU;
@@ -235,9 +233,8 @@ always @(posedge clk) begin
             raddr0_o <= ra_w;
             raddr1_o <= rb_w;
             // load and store operations
-            memce_o <= `LEV_H;
-            memop_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
-                memop_o : ((opcode_w < LSO_STORE) ? `MEM_LOAD : `MEM_STORE);
+            memce_o <= (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) ?
+                memce_o : ((opcode_w < LSO_STORE) ? `LEV_L : `LEV_H);
             memod_o <= `MEM_OPND_WORD;
             stasrc_o <= ((ls_busy_r == `LEV_H && ls_period_r == `LEV_L)
                 || (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD)) ?

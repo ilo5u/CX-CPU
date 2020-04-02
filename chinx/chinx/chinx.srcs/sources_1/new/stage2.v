@@ -33,7 +33,7 @@ module chinx_stage2(
     output wire [`DATA_WIDTH - 1:0] store_o,
 
     output wire memce_o,
-    output wire memop_o,
+    // output wire memop_o, // replaced by memce_o
     output wire [`MEM_OPND_WIDTH - 1:0] memod_o,
     
     output wire [`BRANCH_SRC_WIDTH - 1:0] bsrc_o,
@@ -70,7 +70,7 @@ chinx_emit emit(
     .wbe_o(wbe_w),
     .hle_o(hle_w),
     .memce_o(memce_o),
-    .memop_o(memop_o),
+    // .memop_o(memop_o),
     .memod_o(memod_o),
     .alusrca_o(alusrca_w),
     .alusrcb_o(alusrcb_w),

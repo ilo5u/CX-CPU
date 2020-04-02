@@ -39,7 +39,7 @@ assign imm32_o = (imm8_i[7] == 1'b1) ? {24'hff_ffff, imm8_i} : {24'h00_0000, imm
 endmodule
 
 module chinx_sext16(
-    input wire [7:0] imm16_i,
+    input wire [15:0] imm16_i,
     output wire [31:0] imm32_o
 );
 assign imm32_o = (imm16_i[15] == 1'b1) ? {16'hffff, imm16_i} : {16'h0000, imm16_i};
