@@ -37,10 +37,12 @@
 `define ALU_RES_XOR 3'b110
 `define ALU_RES_NOT 3'b111
 
-`define BRANCH_SRC_WIDTH 2
-`define BRANCH_SRC_NOOP 2'b00
-`define BRANCH_SRC_JUMP 2'b01
-`define BRANCH_SRC_EPC 2'b10
+`define BRANCH_SRC_WIDTH 3
+`define BRANCH_SRC_NOOP 3'b000
+`define BRANCH_SRC_JUMP 3'b001
+`define BRANCH_SRC_EPC 3'b010
+`define BRANCH_SRC_IPC 3'b011
+`define BRANCH_SRC_RPC 3'b100
 
 `define STD_SRC_DATA0 1'b0
 `define STD_SRC_CACHE 1'b1
@@ -65,5 +67,7 @@
 `define MEM_OPND_HALFU `MEM_OPND_WIDTH'd2
 `define MEM_OPND_BYTE `MEM_OPND_WIDTH'd3
 `define MEM_OPND_BYTEU `MEM_OPND_WIDTH'd4
+
+`define INTR_VEC_WIDTH 2
 
 `endif

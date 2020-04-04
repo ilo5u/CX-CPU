@@ -29,8 +29,7 @@ module chinx_emit(
     input wire [`HILO_WIDTH - 1:0] hi_i,
     input wire [`HILO_WIDTH - 1:0] lo_i,
     // interruption
-    input wire ireq,
-    input wire [`ADDR_WIDTH - 1:0] iaddr_i,
+    input wire ireq_i,
     // input wire zerof,
     // write back to regfiles
     output reg [`REG_ADDR_WIDTH - 1:0] waddr_o,
@@ -55,6 +54,8 @@ module chinx_emit(
     // may stall the pipeline
     // by sending this signal to stage1
     output reg [`BRANCH_SRC_WIDTH - 1:0] bsrc_o,
+    // handle interruption
+    output reg irep_o,
 //    output reg [`ADDR_WIDTH - 1:0] pc_o,
     // Load/Store cache
     output reg stasrc_o,
@@ -119,6 +120,7 @@ always @(posedge clk) begin
         alusrca_o <= `ALU_SRC_R0;
         alusrcb_o <= `ALU_SRC_R1;
         alures_o <= `ALU_RES_ADD;
+        irep_o <= `LEV_L;
         bsrc_o <= `BRANCH_SRC_NOOP;
         // internal signals
         conflict_r <= `REG_ZERO;
@@ -126,12 +128,29 @@ always @(posedge clk) begin
         ls_period_r <= `LEV_L;
         ls_op_r <= `MEM_LOAD;
     end else begin
-        if (ireq == `LEV_H) begin
+        if (ireq_i == `LEV_H) begin
+            // ls_period_r <= ~ls_period_r;
             // interruption
             // if there are load/store instructions running now
             // wait for it
             bsrc_o <= (ls_busy_r == `LEV_H) ? `BRANCH_SRC_EPC : `BRANCH_SRC_IPC;
             // TO DO
+            if (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_LOAD) begin
+                wbe_o <= `LEV_H;
+                ls_op_r <= `MEM_STORE;
+            end else if (ls_busy_r == `LEV_H && ls_period_r == `LEV_H && ls_op_r == `MEM_STORE) begin
+                wbe_o <= `LEV_L;
+                memce_o <= `LEV_L;
+                ls_busy_r <= `LEV_L;
+                // restore current environment
+                irep_o <= `LEV_H;
+            end else if (ls_busy_r == `LEV_H && ls_period_r == `LEV_L) begin
+                wbe_o <= `LEV_L;
+                ls_period_r <= `LEV_H;
+            end else begin
+                // restore current environment
+                irep_o <= `LEV_H;
+            end
         end else if ((opcode_w == NOP) ||
             (opcode_w > ALO_BEGIN) && (opcode_w < ALO_END)) begin
             ls_period_r <= ~ls_period_r; // used when load/store is running

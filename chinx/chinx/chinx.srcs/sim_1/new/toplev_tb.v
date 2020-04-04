@@ -35,12 +35,21 @@ initial begin
     forever #2 clk = ~clk;
 end
 
+reg ireq;
+reg [`INTR_VEC_WIDTH - 1:0] ivec;
+initial begin
+    ireq = 0;
+    ivec = 0;
+end
+
 wire [`ADDR_WIDTH - 1:0] pc;
 wire [`DATA_WIDTH - 1:0] instr;
 
 chinx_pipeline pipeline(
     .clk(clk),
     .rst(rst),
+    .ireq(ireq),
+    .ivec(ivec),
     .pc(pc),
     .instr(instr)
 );

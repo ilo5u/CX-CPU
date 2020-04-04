@@ -22,24 +22,30 @@
 
 module chinx_cop(
     input wire clk,
+    input wire rst,
     input wire [`ADDR_WIDTH - 1:0] pc,
 
     input wire ireq,
-    input wire [`INTR_VEC_WIDTH - 1:0] reqvec,
+    input wire [`INTR_VEC_WIDTH - 1:0] ivec,
+    input wire irep,
 
-    output wire zerof,
-    output wire imask,
-    output reg [`ADDR_WIDTH - 1:0] iaddr,
+    output wire intrf,
+    output reg [`ADDR_WIDTH - 1:0] ipc,
+    output reg [`ADDR_WIDTH - 1:0] rpc,
     output reg [`ADDR_WIDTH - 1:0] epc
 );
 
 localparam if_bit = 1;
 localparam zf_bit = 0;
 reg [1:0] state_r; // zf, if
-reg [7:0] ivec_r[0:1];
+reg [`ADDR_WIDTH - 1:0] ivec_r[0:1];
 
 always @(posedge clk) begin
     epc <= pc;
+end
+
+always @(posedge irep) begin
+    rpc <= pc;
 end
 
 always @(posedge clk) begin
@@ -47,16 +53,15 @@ always @(posedge clk) begin
         ivec_r[0] <= `ADDR_WIDTH'd128;
         ivec_r[1] <= `ADDR_WIDTH'd192;
         state_r <= {`LEV_L, `LEV_L};
-    end else if (ireq == `LEV_H && reqvec[0] == `LEV_H && state_r[if_bit] == `LEV_L) begin
-        iaddr <= ivec_r[0];
+    end else if (ireq == `LEV_H && ivec[0] == `LEV_H && state_r[if_bit] == `LEV_L) begin
+        ipc <= ivec_r[0];
         state_r[if_bit] <= `LEV_H;
-    end else if (ireq == `LEV_H && reqvec[1] == `LEV_H && state_r[if_bit] == `LEV_L) begin
-        iaddr <= ivec_r[1];
+    end else if (ireq == `LEV_H && ivec[1] == `LEV_H && state_r[if_bit] == `LEV_L) begin
+        ipc <= ivec_r[1];
         state_r[if_bit] <= `LEV_H;
     end
 end
 
-assign imask = state_r[if_bit];
-assign zerof = state_r[zf_bit];
+assign intrf = state_r[if_bit] & (~irep);
 
 endmodule

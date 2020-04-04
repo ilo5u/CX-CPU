@@ -20,17 +20,17 @@
 //////////////////////////////////////////////////////////////////////////////////
 `include "defines.vh"
 
-module chinx_mux8(
+module chinx_mux8 #(parameter MAX_DATA_WIDTH = 32)(
     input wire [2:0] sel_i,
-    input wire [`DATA_WIDTH - 1:0] data0_i,
-    input wire [`DATA_WIDTH - 1:0] data1_i,
-    input wire [`DATA_WIDTH - 1:0] data2_i,
-    input wire [`DATA_WIDTH - 1:0] data3_i,
-    input wire [`DATA_WIDTH - 1:0] data4_i,
-    input wire [`DATA_WIDTH - 1:0] data5_i,
-    input wire [`DATA_WIDTH - 1:0] data6_i,
-    input wire [`DATA_WIDTH - 1:0] data7_i,
-    output wire [`DATA_WIDTH - 1:0] data_o
+    input wire [MAX_DATA_WIDTH - 1:0] data0_i,
+    input wire [MAX_DATA_WIDTH - 1:0] data1_i,
+    input wire [MAX_DATA_WIDTH - 1:0] data2_i,
+    input wire [MAX_DATA_WIDTH - 1:0] data3_i,
+    input wire [MAX_DATA_WIDTH - 1:0] data4_i,
+    input wire [MAX_DATA_WIDTH - 1:0] data5_i,
+    input wire [MAX_DATA_WIDTH - 1:0] data6_i,
+    input wire [MAX_DATA_WIDTH - 1:0] data7_i,
+    output wire [MAX_DATA_WIDTH - 1:0] data_o
 );
 assign data_o = (sel_i == 3'b000) ? data0_i :
     ((sel_i == 3'b001) ? data1_i : 
