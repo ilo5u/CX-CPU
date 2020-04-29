@@ -17,6 +17,7 @@
 
 using namespace llvm;
 
+// generate parameters
 static cl::opt<bool>
 EnableChinx32Calls("chinx-s32-calls", cl::Hidden,
                    cl::desc("CHINX S32 call: use stack only to pass arguments."),

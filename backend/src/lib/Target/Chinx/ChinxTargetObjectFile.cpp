@@ -8,7 +8,7 @@
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCSectionELF.h"
 #include "llvm/Support/CommandLine.h"
-#include "llvm/Support/ELF.h"
+#include "llvm/BinaryFormat/ELF.h"
 #include "llvm/Target/TargetMachine.h"
 
 using namespace llvm;

@@ -15,6 +15,7 @@
 #include "ChinxInstrInfo.h"
 #include "ChinxMachineFunction.h"
 #include "ChinxSubtarget.h"
+#include "ChinxTargetMachine.h"
 
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
@@ -88,7 +89,7 @@ const ChinxFrameLowering *ChinxFrameLowering::create(const ChinxSubtarget &ST) {
 void ChinxFrameLowering::emitPrologue(MachineFunction &MF,
   MachineBasicBlock &MBB) const {
   assert(&MF.front() == &MBB && "Shrink-wrapping not yet supported");
-  MachineFrameInfo *MFI = MF.getFrameInfo();
+  MachineFrameInfo &MFI = MF.getFrameInfo();
   // ChinxFunctionInfo *ChinxFI = MF.getInfo<ChinxFunctionInfo>();
 
   const ChinxInstrInfo &TII =
@@ -104,25 +105,24 @@ void ChinxFrameLowering::emitPrologue(MachineFunction &MF,
   // const TargetRegisterClass *RC = &Chinx::GPROutRegClass;
 
   // First, compute final stack size.
-  uint64_t StackSize = MFI->getStackSize();
+  uint64_t StackSize = MFI.getStackSize();
 
   // No need to allocate space on the stack.
-  if (StackSize == 0 && !MFI->adjustsStack()) return;
+  if (StackSize == 0 && !MFI.adjustsStack()) return;
 
   MachineModuleInfo &MMI = MF.getMMI();
   const MCRegisterInfo *MRI = MMI.getContext().getRegisterInfo();
-  MachineLocation DstML, SrcML;
 
   // Adjust stack.
   TII.adjustStackPtr(SP, -StackSize, MBB, MBBI);
 
   // emit ".cfi_def_cfa_offset StackSize"
-  unsigned CFIIndex = MMI.addFrameInst(
+  unsigned CFIIndex = MF.addFrameInst(
       MCCFIInstruction::createDefCfaOffset(nullptr, -StackSize));
   BuildMI(MBB, MBBI, dl,
     TII.get(TargetOpcode::CFI_INSTRUCTION)).addCFIIndex(CFIIndex);
 
-  const std::vector<CalleeSavedInfo> &CSI = MFI->getCalleeSavedInfo();
+  const std::vector<CalleeSavedInfo> &CSI = MFI.getCalleeSavedInfo();
 
   if (CSI.size()) {
     // Find the instruction past the last instruction that saves a callee-saved
@@ -134,11 +134,11 @@ void ChinxFrameLowering::emitPrologue(MachineFunction &MF,
     // directives.
     for (std::vector<CalleeSavedInfo>::const_iterator I = CSI.begin(),
            E = CSI.end(); I != E; ++I) {
-      int64_t Offset = MFI->getObjectOffset(I->getFrameIdx());
+      int64_t Offset = MFI.getObjectOffset(I->getFrameIdx());
       unsigned Reg = I->getReg();
       {
         // Reg is in CPURegs.
-        unsigned CFIIndex = MMI.addFrameInst(MCCFIInstruction::createOffset(
+        unsigned CFIIndex = MF.addFrameInst(MCCFIInstruction::createOffset(
           nullptr, MRI->getDwarfRegNum(Reg, 1), Offset));
         BuildMI(MBB, MBBI, dl,
           TII.get(TargetOpcode::CFI_INSTRUCTION)).addCFIIndex(CFIIndex);
@@ -151,7 +151,7 @@ void ChinxFrameLowering::emitPrologue(MachineFunction &MF,
 void ChinxFrameLowering::emitEpilogue(MachineFunction &MF,
   MachineBasicBlock &MBB) const {
   MachineBasicBlock::iterator MBBI = MBB.getLastNonDebugInstr();
-  MachineFrameInfo *MFI = MF.getFrameInfo();
+  MachineFrameInfo &MFI = MF.getFrameInfo();
   // ChinxFunctionInfo *ChinxFI = MF.getInfo<ChinxFunctionInfo>();
 
   const ChinxInstrInfo &TII =
@@ -164,7 +164,7 @@ void ChinxFrameLowering::emitEpilogue(MachineFunction &MF,
   unsigned SP = Chinx::SP;
 
   // Get the number of bytes from FrameInfo
-  uint64_t StackSize = MFI->getStackSize();
+  uint64_t StackSize = MFI.getStackSize();
 
   if (!StackSize)
     return;
@@ -174,13 +174,13 @@ void ChinxFrameLowering::emitEpilogue(MachineFunction &MF,
 }
 
 bool ChinxFrameLowering::hasReservedCallFrame(const MachineFunction &MF) const {
-  const MachineFrameInfo *MFI = MF.getFrameInfo();
+  const MachineFrameInfo &MFI = MF.getFrameInfo();
   // Reserve call frame if the size of the maximum call frame fits into 16-bit
   // immediate field and there are no variable sized objects on the stack.
   // Make sure the second register scavenger spill slot can be accessed with one
   // instruction.
-  return isInt<16>(MFI->getMaxCallFrameSize() + getStackAlignment()) &&
-    !MFI->hasVarSizedObjects();
+  return isInt<16>(MFI.getMaxCallFrameSize() + getStackAlignment()) &&
+    !MFI.hasVarSizedObjects();
 }
 //}
 
@@ -201,7 +201,7 @@ void ChinxFrameLowering::determineCalleeSaves(MachineFunction &MF,
   // ChinxFunctionInfo *ChinxFI = MF.getInfo<ChinxFunctionInfo>();
   // MachineRegisterInfo& MRI = MF.getRegInfo();
 
-  if (MF.getFrameInfo()->hasCalls())
+  if (MF.getFrameInfo().hasCalls())
     setAliasRegs(MF, SavedRegs, Chinx::RA);
 
   return;
@@ -212,10 +212,10 @@ void ChinxFrameLowering::determineCalleeSaves(MachineFunction &MF,
 // if it needs dynamic stack realignment, if frame pointer elimination is
 // disabled, or if the frame address is taken.
 bool ChinxFrameLowering::hasFP(const MachineFunction &MF) const {
-  const MachineFrameInfo *MFI = MF.getFrameInfo();
+  const MachineFrameInfo &MFI = MF.getFrameInfo();
   const TargetRegisterInfo *TRI = STI.getRegisterInfo();
 
   return MF.getTarget().Options.DisableFramePointerElim(MF) ||
-      MFI->hasVarSizedObjects() || MFI->isFrameAddressTaken() ||
+      MFI.hasVarSizedObjects() || MFI.isFrameAddressTaken() ||
       TRI->needsStackRealignment(MF);
 }

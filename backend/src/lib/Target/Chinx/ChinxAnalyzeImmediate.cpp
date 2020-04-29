@@ -40,11 +40,11 @@ void ChinxAnalyzeImmediate::GetInstSeqLsORI(uint64_t Imm,
   AddInstr(SeqLs, Inst(ORI, Imm & 0xffffULL));
 }
 
-void ChinxAnalyzeImmediate::GetInstSeqLsSHL(uint64_t Imm,
+void ChinxAnalyzeImmediate::GetInstSeqLsSLL(uint64_t Imm,
   unsigned RemSize, InstSeqLs &SeqLs) {
   unsigned Shamt = countTrailingZeros(Imm);
   GetInstSeqLs(Imm >> Shamt, RemSize - Shamt, SeqLs);
-  AddInstr(SeqLs, Inst(SHL, Shamt));
+  AddInstr(SeqLs, Inst(SLL, Shamt));
 }
 
 void ChinxAnalyzeImmediate::GetInstSeqLs(uint64_t Imm,
@@ -63,7 +63,7 @@ void ChinxAnalyzeImmediate::GetInstSeqLs(uint64_t Imm,
 
   // Shift if the lower 16-bit is cleared.
   if (!(Imm & 0xffff)) {
-    GetInstSeqLsSHL(Imm, RemSize, SeqLs);
+    GetInstSeqLsSLL(Imm, RemSize, SeqLs);
     return;
   }
 
@@ -78,17 +78,17 @@ void ChinxAnalyzeImmediate::GetInstSeqLs(uint64_t Imm,
   }
 }
 
-// Replace a ADDI & SHL pair with a LUI.
+// Replace a ADDI & SLL pair with a LUI.
 // e.g. the following two instructions
 //  ADDI 0x0111
-//  SHL 18
+//  SLL 18
 // are replaced with
 //  LUI 0x444
-void ChinxAnalyzeImmediate::ReplaceADDISHLWithLUI(InstSeq &Seq) {
-  // Check if the first two instructions are ADDI and SHL and the shift amount
+void ChinxAnalyzeImmediate::ReplaceADDISLLWithLUI(InstSeq &Seq) {
+  // Check if the first two instructions are ADDI and SLL and the shift amount
   // is at least 16.
   if ((Seq.size() < 2) || (Seq[0].Opc != ADDI) ||
-      (Seq[1].Opc != SHL) || (Seq[1].ImmOpnd < 16))
+      (Seq[1].Opc != SLL) || (Seq[1].ImmOpnd < 16))
     return;
 
   // Sign-extend and shift operand of ADDI and see if it still fits in 16-bit.
@@ -110,7 +110,7 @@ void ChinxAnalyzeImmediate::GetShortestSeq(InstSeqLs &SeqLs, InstSeq &Insts) {
   unsigned ShortestLength = 8;
 
   for (InstSeqLs::iterator S = SeqLs.begin(); S != SeqLs.end(); ++S) {
-    ReplaceADDISHLWithLUI(*S);
+    ReplaceADDISLLWithLUI(*S);
     assert(S->size() <= 7);
 
     if (S->size() < ShortestLength) {
@@ -130,7 +130,7 @@ const ChinxAnalyzeImmediate::InstSeq
 
   ADDI = Chinx::ADDI;
   ORI = Chinx::ORI;
-  SHL = Chinx::SHL;
+  SLL = Chinx::SLL;
   LUI = Chinx::LUI;
 
   InstSeqLs SeqLs;

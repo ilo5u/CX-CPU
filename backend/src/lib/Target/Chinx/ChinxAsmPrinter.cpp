@@ -33,7 +33,7 @@
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/MC/MCSymbol.h"
-#include "llvm/Support/ELF.h"
+#include "llvm/BinaryFormat/ELF.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Target/TargetLoweringObjectFile.h"
@@ -120,11 +120,11 @@ void ChinxAsmPrinter::printSavedRegsBitmask(raw_ostream& O) {
   int CPUTopSavedRegOff;
 
   // Set the CPU Bitmasks
-  const MachineFrameInfo *MFI = MF->getFrameInfo();
+  const MachineFrameInfo &MFI = MF->getFrameInfo();
   const TargetRegisterInfo *TRI = MF->getSubtarget().getRegisterInfo();
-  const std::vector<CalleeSavedInfo> &CSI = MFI->getCalleeSavedInfo();
+  const std::vector<CalleeSavedInfo> &CSI = MFI.getCalleeSavedInfo();
   // size of stack area to which FP callee-saved regs are saved.
-  unsigned CPURegSize = Chinx::CPURegsRegClass.getSize();
+  unsigned CPURegSize = TRI->getRegSizeInBits(Chinx::CPURegsRegClass) / 8;
 
   // Set CPU Bitmask.
   for (const auto &I : CSI) {
@@ -157,7 +157,7 @@ void ChinxAsmPrinter::emitFrameDirective() {
 
   unsigned stackReg  = RI.getFrameRegister(*MF);
   unsigned returnReg = RI.getRARegister();
-  unsigned stackSize = MF->getFrameInfo()->getStackSize();
+  unsigned stackSize = MF->getFrameInfo().getStackSize();
   if (OutStreamer->hasRawTextSupport()) {
     OutStreamer->EmitRawText("\t.frame\t$" + 
       StringRef(ChinxInstPrinter::getRegisterName(stackReg)).lower() + 
@@ -231,6 +231,6 @@ void ChinxAsmPrinter::PrintDebugValueComment(const MachineInstr *MI,
 
 // Force static initialization.
 extern "C" void LLVMInitializeChinxAsmPrinter() {
-  RegisterAsmPrinter<ChinxAsmPrinter> X(TheChinxTarget);
-  RegisterAsmPrinter<ChinxAsmPrinter> Y(TheChinxelTarget);
+  RegisterAsmPrinter<ChinxAsmPrinter> X(getTheChinxTarget());
+  //RegisterAsmPrinter<ChinxAsmPrinter> Y(TheChinxelTarget);
 }

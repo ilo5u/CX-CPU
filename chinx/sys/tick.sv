@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2020/03/25 10:32:09
+// Create Date: 2020/04/21 11:57:40
 // Design Name: 
-// Module Name: chinx_pc
+// Module Name: chinx_tick
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -18,21 +18,22 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`include "defines.vh"
 
-module chinx_pc(
+
+module chinx_tick(
     input wire clk,
     input wire rst,
-    input wire [`ADDR_WIDTH - 1:0] pc_i,
-    output reg [`ADDR_WIDTH - 1:0] pc_o
+    output reg ireq
 );
-
-always @(negedge clk) begin
-    if (rst == `LEV_H) begin
-        pc_o <= `ADDR_WIDTH'd0;
-    end else begin
-        pc_o <= pc_i;
-    end
+reg [31:0] div;
+always_ff @(posedge clk)
+if (rst == 1'b1) begin
+    div <= 32'd0;
+    ireq <= 1'b0;
+end else if (div < 10000) begin
+    div <= div + 1;
+end else begin
+    div <= 32'd0;
+    ireq <= ~ireq;
 end
-
 endmodule

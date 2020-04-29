@@ -26,7 +26,7 @@ module chinx_stage1(
     input wire [`BRANCH_SRC_WIDTH - 1:0] bsrc_i, // select the next pc value
     input wire [`ADDR_WIDTH - 1:0] epc_i, // epc used for stall pipeline
     input wire [`ADDR_WIDTH - 1:0] ipc_i, // ipc used for interruption
-    input wire [`ADDR_WIDTH - 1:0] rpc_i,
+    input wire [`ADDR_WIDTH - 1:0] rpc_i, // rpc used for turning back from interruption
     input wire [`ADDR_WIDTH - 1:0] baddr_i, // branch address
 
     output wire [`ADDR_WIDTH - 1:0] pc_o, // pc in IF stage
@@ -51,9 +51,9 @@ chinx_mux8 #(`ADDR_WIDTH) nextpc(.sel_i(bsrc_i),
                   .data2_i(epc_i),
                   .data3_i(ipc_i),
                   .data4_i(rpc_i),
-                  .data5_i(rpc_i),
-                  .data6_i(rpc_i),
-                  .data7_i(rpc_i),
+                  .data5_i(baddr_i),
+                  .data6_i(baddr_i),
+                  .data7_i(baddr_i),
                   .data_o(pci_w));
 // send out current pc value
 assign pc_o = pco_w;

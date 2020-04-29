@@ -1,4 +1,5 @@
-//===-- ChinxISelDAGToDAG.cpp - A Dag to Dag Inst Selector for Chinx --------===//
+//===-- ChinxISelDAGToDAG.cpp - A Dag to Dag Inst Selector for Chinx
+//--------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -54,8 +55,8 @@ bool ChinxDAGToDAGISel::runOnMachineFunction(MachineFunction &MF) {
 
 /// ComplexPattern used on ChinxInstrInfo
 /// Used on Chinx Load/Store instructions
-bool ChinxDAGToDAGISel::SelectAddr(SDNode *Parent, SDValue Addr, 
-                                   SDValue& Base, SDValue& Offset) {
+bool ChinxDAGToDAGISel::SelectADDRls(SDNode *Parent, SDValue Addr, SDValue &Base,
+                                     SDValue &Offset) {
   EVT ValTy = Addr.getValueType();
   SDLoc DL(Addr);
 
@@ -83,17 +84,32 @@ bool ChinxDAGToDAGISel::SelectAddr(SDNode *Parent, SDValue Addr,
   return true;
 }
 
+bool ChinxDAGToDAGISel::SelectADDRio(SDValue Addr, SDValue &Base,
+                                     SDValue &Offset) {
+  EVT ValTy = Addr.getValueType();
+  SDLoc DL(Addr);
+
+  // if Address is FI, get the TargetFrameIndex.
+  if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Addr)) {
+    return false;
+  }
+
+  Base = Addr;
+  Offset = CurDAG->getTargetConstant(0, DL, ValTy);
+  return true;
+}
+
 /// Select instructions not customized! Used for
 /// expanded, promoted and normal instructions
 void ChinxDAGToDAGISel::Select(SDNode *Node) {
   unsigned Opcode = Node->getOpcode();
 
   // Dump information about the Node being selected
-  DEBUG(errs() << "Selecting: "; Node->dump(CurDAG); errs() << "\n");
+  // DEBUG(errs() << "Selecting: "; Node->dump(CurDAG); errs() << "\n");
 
   // If we have a custom node, we already have selected!
   if (Node->isMachineOpcode()) {
-    DEBUG(errs() << "== "; Node->dump(CurDAG); errs() << "\n");
+    // DEBUG(errs() << "== "; Node->dump(CurDAG); errs() << "\n");
     Node->setNodeId(-1);
     return;
   }
@@ -102,9 +118,10 @@ void ChinxDAGToDAGISel::Select(SDNode *Node) {
   if (trySelect(Node))
     return;
 
-  switch(Opcode) {
-  default: break;
-   }
+  switch (Opcode) {
+  default:
+    break;
+  }
 
   // Select the default instruction
   SelectCode(Node);
@@ -113,14 +130,38 @@ void ChinxDAGToDAGISel::Select(SDNode *Node) {
 bool ChinxDAGToDAGISel::trySelect(SDNode *Node) {
   unsigned Opcode = Node->getOpcode();
   SDLoc DL(Node);
-  // EVT NodeTy = Node->getValueType(0);
-  // unsigned MultOpc;
+  EVT NodeTy = Node->getValueType(0);
+  //unsigned MulOpc;
   ///
   // Instruction Selection not handled by the auto-generated
   // tablegen selection should be handled here.
   ///
-  switch(Opcode) {
-  default: break;
+  switch (Opcode) {
+  // case ISD::MUL:
+  //case ISD::STORE: {
+  //  SDNode *Store = CurDAG->getMachineNode(Chinx::SET, DL, NodeTy, MVT::Glue,
+		//{Node->getOperand(0), Node->getOperand(1), Node->getOperand(2), Node->getOperand(3)});
+  //  ReplaceNode(Node, Store);
+  //StoreSDNode *s = dyn_cast<StoreSDNode>(Node);
+  //
+  //break;
+  //  return true;
+  //}
+  //case ISD::MULHU:
+  //case ISD::MULHS: {
+  //  MulOpc = Chinx::MUL;
+  //  auto LoHi = selectMul(Node, MulOpc, DL, NodeTy, true, true);
+  //  ReplaceNode(Node, LoHi.second);
+  //  return true;
+  //}
+  //case ISD::Constant: {
+  //  const ConstantSDNode *CN = dyn_cast<ConstantSDNode>(Node);
+  //  if (CN->getValueSizeInBits(0) == 32)
+  //    break;
+  //  return true;
+  //}
+  default:
+    break;
   }
   return false;
 }
@@ -128,6 +169,6 @@ bool ChinxDAGToDAGISel::trySelect(SDNode *Node) {
 void ChinxDAGToDAGISel::processFunctionAfterISel(MachineFunction &MF) {}
 
 FunctionPass *llvm::createChinxISelDag(ChinxTargetMachine &TM,
-                                         CodeGenOpt::Level OptLevel) {
+                                       CodeGenOpt::Level OptLevel) {
   return new ChinxDAGToDAGISel(TM, OptLevel);
 }

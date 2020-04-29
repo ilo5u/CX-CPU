@@ -22,7 +22,7 @@
 #include "llvm/CodeGen/CallingConvLower.h"
 #include "llvm/CodeGen/SelectionDAG.h"
 #include "llvm/IR/Function.h"
-#include "llvm/Target/TargetLowering.h"
+#include "llvm/CodeGen/TargetLowering.h"
 #include <deque>
 
 namespace llvm {
@@ -30,44 +30,31 @@ namespace llvm {
     enum NodeType : unsigned {
       // Start the numbering from where ISD NodeType finishes.
       FIRST_NUMBER = ISD::BUILTIN_OP_END,
-
       // Jump and link (call)
       JmpLink,
-
       // Tail call
       TailCall,
-
       // Get the Higher 16 bits from a 32-bit immediate
       // No relation with Chinx Hi register
       Hi,
-
       // Get the Lower 16 bits from a 32-bit immediate
       // No relation with Chinx Lo register
       Lo,
-
       // Handle gp_rel (small data/bss sections) relocation.
       GPRel,
-
       // Thread Pointer
       ThreadPointer,
-
       // Return
       Ret,
-
       // Software Exception Return.
       EH_RETURN,
-
       // Node used to extract integer from accumulator.
       MFHI,
       MFLO,
-
-      // Mult nodes.
-      Mult,
-
+      // Mul nodes.
+      Mul,
       Wrapper,
-
       DynAlloc,
-
       Sync
     };
   }
@@ -96,7 +83,8 @@ namespace llvm {
                         const SmallVectorImpl<ISD::OutputArg> &Outs,
                         const SmallVectorImpl<SDValue> &OutVals,
                         const SDLoc &dl, SelectionDAG &DAG) const override;
-
+    
+    // SDValue PerformDAGCombine(SDNode *N, DAGCombinerInfo &DCI) const override;
   protected:
     // ByValArgInfo - ByVal argument information.
     struct ByValArgInfo {

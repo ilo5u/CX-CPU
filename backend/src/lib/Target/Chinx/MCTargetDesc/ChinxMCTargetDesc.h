@@ -16,8 +16,7 @@ namespace llvm {
     class Target;
     class Triple;
 
-    extern Target TheChinxTarget;
-    extern Target TheChinxelTarget;
+	Target &getTheChinxTarget();
 }
 
 #define GET_REGINFO_ENUM

@@ -50,7 +50,7 @@ public:
           Subtarget = static_cast<ChinxTargetMachine &>(TM).getSubtargetImpl();
         }
 
-  virtual const char *getPassName() const override {
+  virtual StringRef getPassName() const override {
     return "Chinx Assembly Printer";
   }
 

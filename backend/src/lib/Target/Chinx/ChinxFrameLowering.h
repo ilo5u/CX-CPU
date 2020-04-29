@@ -15,7 +15,7 @@
 #define LLVM_LIB_TARGET_CHINX_CHINXFRAMELOWERING_H
 
 #include "Chinx.h"
-#include "llvm/Target/TargetFrameLowering.h"
+#include "llvm/CodeGen/TargetFrameLowering.h"
 
 namespace llvm {
     class ChinxSubtarget;

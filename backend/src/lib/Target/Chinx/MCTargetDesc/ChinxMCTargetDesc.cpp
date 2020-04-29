@@ -31,7 +31,7 @@ using namespace llvm;
 static StringRef selectChinxArchFeature(const Triple& TT, StringRef CPU) {
     std::string ChinxArchFeature;
     if (CPU.empty() || CPU == "generic") {
-        if (TT.getArch() == Triple::chinx || TT.getArch() == Triple::chinxel) {
+        if (TT.getArch() == Triple::chinx) {
             if (CPU.empty() || CPU == "chinxII") {
                 ChinxArchFeature = "+chinxII";
             } else {
@@ -98,7 +98,7 @@ static MCInstrAnalysis *createChinxMCInstrAnalysis(const MCInstrInfo *Info) {
 }
 
 extern "C" void LLVMInitializeChinxTargetMC() {
-    for (Target *T : {&TheChinxTarget, &TheChinxelTarget}) {
+    for (Target *T : {&getTheChinxTarget()}) {
         // Register the MC asm info.
         RegisterMCAsmInfoFn X(*T, createChinxMCAsmInfo);
 

@@ -31,18 +31,27 @@ using namespace llvm;
 #define GET_SUBTARGETINFO_CTOR
 #include "ChinxGenSubtargetInfo.inc"
 
+// disabled by chinx
+// static cl::opt<bool> EnableOverflowOpt{
+//   "chinx-enable-overflow", cl::Hidden, cl::init(false),
+//   cl::desc("Use trigger overflow instructions add and sub \
+//   instead of non-overflow instructions addu and subu")
+// };
+
+// obtain virtual table
 void ChinxSubtarget::anchor() {}
 
 ChinxSubtarget::ChinxSubtarget(const Triple &TT, const std::string &CPU,
                                const std::string &FS, bool little,
                                const ChinxTargetMachine &TM)
     : ChinxGenSubtargetInfo(TT, CPU, FS), IsLittle(little),
-      ChinxFeatureVersion(Chinx1), ChinxArchVersion(ChinxDefault),
+      ChinxFeatureVersion(ChinxMax), ChinxArchVersion(ChinxII),
       TM(TM), TargetTriple(TT), TSInfo(),
       InstrInfo(
           ChinxInstrInfo::create(initializeSubtargetDependencies(CPU, FS, TM))
       ), FrameLowering(ChinxFrameLowering::create(*this)),
-      TLInfo(ChinxTargetLowering::create(TM, *this)) {}
+      TLInfo(ChinxTargetLowering::create(TM, *this)) {     
+}
 
 bool ChinxSubtarget::isPositionIndependent() const {
   return TM.isPositionIndependent();
@@ -76,12 +85,10 @@ ChinxSubtarget::initializeSubtargetDependencies(StringRef CPU, StringRef FS,
     ChinxArchVersion = ChinxII;
 
   if (isChinxI()) {
-    HasPush = true;
-    HasCall = false;
+    HasSet = false;
   }
   else if (isChinxII()) {
-    HasPush = true;
-    HasCall = true;
+    HasSet = true;
   }
   else {
     errs() << "-mcpu must be empty(default:chinxII), chinxI or chinxII" << "\n";

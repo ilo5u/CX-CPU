@@ -15,7 +15,7 @@
 #define LLVM_LIB_TARGET_CHINX_CHINXREGISTERINFO_H
 
 #include "Chinx.h"
-#include "llvm/Target/TargetRegisterInfo.h"
+#include "llvm/CodeGen/MachineBasicBlock.h"
 
 #define GET_REGINFO_HEADER
 #include "ChinxGenRegisterInfo.inc"

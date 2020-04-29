@@ -26,9 +26,13 @@ module chinx_mux4 #(parameter MUX_DATA_WIDTH = 8)(
     input wire [MUX_DATA_WIDTH - 1:0] data1_i,
     input wire [MUX_DATA_WIDTH - 1:0] data2_i,
     input wire [MUX_DATA_WIDTH - 1:0] data3_i,
-    output wire [MUX_DATA_WIDTH - 1:0] data_o
+    output reg [MUX_DATA_WIDTH - 1:0] data_o
 );
-assign data_o = (sel_i == 2'b00) ? data0_i :
-    ((sel_i == 2'b01) ? data1_i : 
-    ((sel_i == 2'b10) ? data2_i : data3_i));
+always_comb
+case(sel_i)
+2'b00: data_o = data0_i;
+2'b01: data_o = data1_i;
+2'b10: data_o = data2_i;
+default: data_o = data3_i;
+endcase
 endmodule

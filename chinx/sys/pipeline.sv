@@ -21,37 +21,64 @@
 `include "defines.vh"
 
 module chinx_pipeline(
-    input wire clk,
-    input wire rst,
-    input wire ireq,
-    input wire [`INTR_VEC_WIDTH - 1:0] ivec,
-    output wire [`ADDR_WIDTH - 1:0] pc,
-    output wire [`INSTR_WIDTH - 1:0] instr
+    input wire clk, // 50mhz
+    input wire rst, // active high
+    // io ports
+    inout [7:0] io0,
+    inout [7:0] io1,
+    inout [7:0] io2,
+    inout [7:0] io3
 );
-reg ramclk;
-always @(posedge clk) begin
-    if (rst == `LEV_H) begin
-        ramclk <= `LEV_L;
-    end else begin
-        ramclk <= ~ramclk;
-    end
-end
 
+// wire sysclk;
+// wire memclk;
+// wire tikclk;
+// clock_gen cgen(
+//     .clk_in1(clk),
+//     .clk_out1(sysclk),
+//     .clk_out2(memclk)
+// );
+ 
+ wire sysclk;
+ wire memclk;
+ cgen clock_gen(
+    .clk(clk),
+    .clk_0(sysclk),
+    .clk_1(memclk)
+ );
+ wire tikclk = sysclk;
+
+wire ir0_w;
+chinx_tick tick(
+    .clk(tikclk),
+    .rst(rst),
+    .ireq(ir0_w)
+);
+wire ireq_w;
+wire [`INTR_VEC_WIDTH - 1:0] ivec_w;
 wire irep_w;
-wire zerof_w;
+chinx_intr intr(
+    .clk(sysclk),
+    .rst(rst),
+    .mask(irep_w),
+    .ir0(ir0_w),
+    .ir1(1'b0),
+    .ireq(ireq_w),
+    .ivec(ivec_w)
+);
+
 wire intrf_w;
 wire [`ADDR_WIDTH - 1:0] pc_w;
 wire [`ADDR_WIDTH - 1:0] epco_w;
 wire [`ADDR_WIDTH - 1:0] ipco_w;
 wire [`ADDR_WIDTH - 1:0] rpco_w;
 chinx_cop cop(
-    .clk(clk),
+    .clk(sysclk),
     .rst(rst),
     .pc(pc_w),
-    .ireq(ireq),
-    .ivec(ivec),
+    .ireq(ireq_w),
+    .ivec(ivec_w),
     .irep(irep_w),
-    // .zerof(zerof_w),
     .intrf(intrf_w),
     .ipc(ipco_w),
     .rpc(rpco_w),
@@ -62,7 +89,7 @@ wire [`BRANCH_SRC_WIDTH - 1:0] bsrc_w;
 wire [`ADDR_WIDTH - 1:0] baddr_w;
 wire [`INSTR_WIDTH - 1:0] instr_w;
 chinx_stage1 stage1(
-    .clk(clk),
+    .clk(sysclk),
     .rst(rst),
     .bsrc_i(bsrc_w),
     .epc_i(epco_w),
@@ -72,8 +99,6 @@ chinx_stage1 stage1(
     .pc_o(pc_w),
     .instr_o(instr_w)
 );
-assign pc = pc_w;
-assign instr = instr_w;
 
 wire memce_w;
 wire [`MEM_OPND_WIDTH - 1:0] memod_w;
@@ -81,7 +106,7 @@ wire [`DATA_WIDTH - 1:0] load_w;
 wire [`DATA_WIDTH - 1:0] store_w;
 wire [`ADDR_WIDTH - 1:0] lsaddr_w;
 chinx_stage2 stage2(
-    .clk(clk),
+    .clk(sysclk),
     .rst(rst),
     .pc_i(pc_w),
     .instr_i(instr_w),
@@ -93,28 +118,21 @@ chinx_stage2 stage2(
     .store_o(store_w),
     .bsrc_o(bsrc_w),
     .irep_o(irep_w),
-//    .pc_o(epci_w),
-    .baddr_o(baddr_w),
-    .zerof_o(zerof_w)
+    .baddr_o(baddr_w)
 );
 
 chinx_mem32 mem32(
-    .clk(ramclk),
+    .clk(memclk),
+    .rst(rst),
     .ce(memce_w),
     .opnd(memod_w),
     .addr_i(lsaddr_w),
     .data_i(store_w),
+    .iodata0(io0),
+    .iodata1(io1),
+    .iodata2(io2),
+    .iodata3(io3),
     .data_o(load_w)
 );
-
-//chinx_ram ram32(
-//    .ramclk(ramclk),
-//    .ce(memce_w),
-//    .rwe(memop_w),
-//    .opnd(memod_w),
-//    .addr_i(lsaddr_w),
-//    .data_i(store_w),
-//    .data_o(load_w)
-//);
 
 endmodule

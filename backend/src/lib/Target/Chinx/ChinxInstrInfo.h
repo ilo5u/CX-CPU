@@ -19,7 +19,7 @@
 #include "ChinxRegisterInfo.h"
 
 #include "llvm/CodeGen/MachineInstrBuilder.h"
-#include "llvm/Target/TargetInstrInfo.h"
+#include "llvm/CodeGen/TargetInstrInfo.h"
 
 #define GET_INSTRINFO_HEADER
 #include "ChinxGenInstrInfo.inc"
@@ -50,7 +50,7 @@ public:
     MachineBasicBlock::iterator MBBI,
     unsigned SrcReg, bool isKill, int FrameIndex,
     const TargetRegisterClass *RC,
-    const TargetRegisterInfo *TRI) const {
+    const TargetRegisterInfo *TRI) const override {
     storeRegToStack(MBB, MBBI, SrcReg, isKill, FrameIndex, RC, TRI, 0);
   }
 
@@ -58,7 +58,7 @@ public:
     MachineBasicBlock::iterator MBBI,
     unsigned DestReg, int FrameIndex,
     const TargetRegisterClass *RC,
-    const TargetRegisterInfo *TRI) const {
+    const TargetRegisterInfo *TRI) const override {
     loadRegFromStack(MBB, MBBI, DestReg, FrameIndex, RC, TRI, 0);
   }
 
@@ -76,7 +76,7 @@ public:
     const TargetRegisterInfo *TRI,
     int64_t Offset) const;
 
-  bool expandPostRAPseudo(MachineInstr &MI) const;
+  bool expandPostRAPseudo(MachineInstr &MI) const override;
 
   void adjustStackPtr(unsigned SP, int64_t Amount,
     MachineBasicBlock &MBB,

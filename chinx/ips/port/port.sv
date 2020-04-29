@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2020/03/25 14:21:17
+// Create Date: 2020/04/20 14:29:52
 // Design Name: 
-// Module Name: chinx_mux2
+// Module Name: CustomPort
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -18,13 +18,22 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`include "defines.vh"
 
-module chinx_mux2(
-    input wire sel_i,
-    input wire [`ADDR_WIDTH - 1:0] data0_i,
-    input wire [`ADDR_WIDTH - 1:0] data1_i,
-    output wire [`ADDR_WIDTH - 1:0] data_o
+
+module CustomPort(
+    input wire clk,
+    input wire ce,
+    input wire z,
+    inout [7:0] dio_0,
+    inout [7:0] dio_1
 );
-assign data_o = (sel_i == 1'b0) ? data0_i : data1_i;
+reg [7:0] data;
+always_ff @(posedge clk) begin
+    if (ce == 1'b1)
+        data <= (z == 1'b0) ? dio_1 : dio_0;
+end
+// 0: 0->1
+// 1: 0<-1
+assign dio_0 = (z == 1'b0) ? data : 8'bz;
+assign dio_1 = (z == 1'b0) ? 8'bz : data;
 endmodule

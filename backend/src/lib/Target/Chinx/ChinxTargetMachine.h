@@ -19,7 +19,7 @@
 
 #include "llvm/CodeGen/Passes.h"
 #include "llvm/CodeGen/SelectionDAGISel.h"
-#include "llvm/Target/TargetFrameLowering.h"
+#include "llvm/CodeGen/TargetFrameLowering.h"
 #include "llvm/Target/TargetMachine.h"
 
 namespace llvm {
@@ -40,8 +40,8 @@ class ChinxTargetMachine : public LLVMTargetMachine {
 public:
   ChinxTargetMachine(const Target &T, const Triple &TT, StringRef CPU,
                      StringRef FS, const TargetOptions &Options,
-                     Optional<Reloc::Model> RM, CodeModel::Model CM,
-                     CodeGenOpt::Level OL, bool isLittle);
+                     Optional<Reloc::Model> RM, Optional<CodeModel::Model> CM,
+                     CodeGenOpt::Level OL, bool JIT, bool isLittle);
   ~ChinxTargetMachine() override;
 
   const ChinxSubtarget *getSubtargetImpl() const {
@@ -66,8 +66,9 @@ class ChinxebTargetMachine : public ChinxTargetMachine {
 public:
     ChinxebTargetMachine(const Target &T, const Triple &TT, StringRef CPU,
                          StringRef FS, const TargetOptions &Options,
-                         Optional<Reloc::Model> RM, CodeModel::Model CM,
-                         CodeGenOpt::Level OL);
+                         Optional<Reloc::Model> RM,
+                         Optional<CodeModel::Model> CM, CodeGenOpt::Level OL,
+                         bool JIT);
 };
 
 class ChinxelTargetMachine : public ChinxTargetMachine {
@@ -75,8 +76,9 @@ class ChinxelTargetMachine : public ChinxTargetMachine {
 public:
     ChinxelTargetMachine(const Target &T, const Triple &TT, StringRef CPU,
                          StringRef FS, const TargetOptions &Options,
-                         Optional<Reloc::Model> RM, CodeModel::Model CM,
-                         CodeGenOpt::Level OL);
+                         Optional<Reloc::Model> RM,
+                         Optional<CodeModel::Model> CM, CodeGenOpt::Level OL,
+                         bool JIT);
 };
 } // End llvm namespace
 

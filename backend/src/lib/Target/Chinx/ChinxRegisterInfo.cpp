@@ -74,7 +74,7 @@ void ChinxRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
 	int SPAdj, unsigned FIOperandNum, RegScavenger *RS) const {
   MachineInstr &MI = *II;
   MachineFunction &MF = *MI.getParent()->getParent();
-  MachineFrameInfo *MFI = MF.getFrameInfo();
+  MachineFrameInfo &MFI = MF.getFrameInfo();
 
   unsigned i = 0;
   while (!MI.getOperand(i).isFI()) {
@@ -83,18 +83,18 @@ void ChinxRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
            "Instr doesn't have FrameIndex operand!");
   }
 
-  DEBUG(errs() << "\nFunction : " << MF.getFunction()->getName() << "\n";
-        errs() << "<--------->\n" << MI);
+  // DEBUG(errs() << "\nFunction : " << MF.getFunction()->getName() << "\n";
+  //      errs() << "<--------->\n" << MI);
 
   int FrameIndex = MI.getOperand(i).getIndex();
-  uint64_t stackSize = MF.getFrameInfo()->getStackSize();
-  int64_t spOffset = MF.getFrameInfo()->getObjectOffset(FrameIndex);
+  uint64_t stackSize = MF.getFrameInfo().getStackSize();
+  int64_t spOffset = MF.getFrameInfo().getObjectOffset(FrameIndex);
 
-  DEBUG(errs() << "FrameIndex : " << FrameIndex << "\n"
-               << "spOffset   : " << spOffset << "\n"
-               << "stackSize  : " << stackSize << "\n");
+  //DEBUG(errs() << "FrameIndex : " << FrameIndex << "\n"
+  //             << "spOffset   : " << spOffset << "\n"
+  //             << "stackSize  : " << stackSize << "\n");
 
-  const std::vector<CalleeSavedInfo> &CSI = MFI->getCalleeSavedInfo();
+  const std::vector<CalleeSavedInfo> &CSI = MFI.getCalleeSavedInfo();
   int MinCSFI = 0;
   int MaxCSFI = -1;
 
@@ -123,7 +123,7 @@ void ChinxRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
   int64_t Offset = spOffset + (int64_t)stackSize;
   Offset += MI.getOperand(i+1).getImm();
 
-  DEBUG(errs() << "Offset     : " << Offset << "\n" << "<--------->\n");
+  //DEBUG(errs() << "Offset     : " << Offset << "\n" << "<--------->\n");
 
   // If MI is not a debug value, make sure Offset fits in the 16-bit immediate
   // field.

@@ -30,13 +30,17 @@ module chinx_mux8 #(parameter MAX_DATA_WIDTH = 32)(
     input wire [MAX_DATA_WIDTH - 1:0] data5_i,
     input wire [MAX_DATA_WIDTH - 1:0] data6_i,
     input wire [MAX_DATA_WIDTH - 1:0] data7_i,
-    output wire [MAX_DATA_WIDTH - 1:0] data_o
+    output reg [MAX_DATA_WIDTH - 1:0] data_o
 );
-assign data_o = (sel_i == 3'b000) ? data0_i :
-    ((sel_i == 3'b001) ? data1_i : 
-    ((sel_i == 3'b010) ? data2_i :
-    ((sel_i == 3'b011) ? data3_i :
-    ((sel_i == 3'b100) ? data4_i :
-    ((sel_i == 3'b101) ? data5_i :
-    ((sel_i == 3'b110) ? data6_i : data7_i))))));
+always_comb
+case(sel_i)
+3'b000 : data_o = data0_i;
+3'b001 : data_o = data1_i;
+3'b010 : data_o = data2_i;
+3'b011 : data_o = data3_i;
+3'b100 : data_o = data4_i;
+3'b101 : data_o = data5_i;
+3'b110 : data_o = data6_i;
+default: data_o = data7_i;
+endcase
 endmodule

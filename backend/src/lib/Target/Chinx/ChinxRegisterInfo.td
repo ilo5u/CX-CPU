@@ -54,7 +54,5 @@ def CPURegs : RegisterClass<"Chinx", [i32], 32, (add
     GP, SP, FP, RA)>;
 
 def C0Regs : RegisterClass<"Chinx", [i32], 32, (add PC, EPC)>;
-
-def SWReg : RegisterClass<"Chinx", [i32], 32, (add K1)>;
-
-def GPROut : RegisterClass<"Chinx", [i32], 32, (add (sub CPURegs, K1))>;
+def GPROut : RegisterClass<"Chinx", [i32], 32, (add (sub CPURegs, K0, K1))>;
+def MEMRegs : RegisterClass<"Chinx", [i32], 32, (add (sub CPURegs, ZERO, K0, K1, RA))>;

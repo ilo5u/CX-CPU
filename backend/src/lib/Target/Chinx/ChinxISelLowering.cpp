@@ -69,7 +69,7 @@ const char *ChinxTargetLowering::getTargetNodeName(unsigned Opcode) const {
   case ChinxISD::EH_RETURN:         return "ChinxISD::EH_RETURN";
   case ChinxISD::MFHI:              return "ChinxISD::MFHI";
   case ChinxISD::MFLO:              return "ChinxISD::MFLO";
-  case ChinxISD::Mult:              return "ChinxISD::Mult";
+  case ChinxISD::Mul:               return "ChinxISD::Mul";
   case ChinxISD::Wrapper:           return "ChinxISD::Wrapper";
   }
   return nullptr;
@@ -121,7 +121,7 @@ ChinxTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
   CCState CCInfo(CallConv, IsVarArg, MF, RVLocs, *DAG.getContext());
   ChinxCC ChinxCCInfo(CallConv, ABI.IsO32(), CCInfo);
   ChinxCCInfo.analyzeReturn(Outs, Subtarget.abiUsesSoftFloat(),
-    MF.getFunction()->getReturnType());
+    MF.getFunction().getReturnType());
 
   SDValue Flag;
   SmallVector<SDValue, 4> RetOps(1, Chain);
@@ -140,7 +140,7 @@ ChinxTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
     RetOps.push_back(DAG.getRegister(VA.getLocReg(), VA.getLocVT()));
   }
 
-  if (MF.getFunction()->hasStructRetAttr()) {
+  if (MF.getFunction().hasStructRetAttr()) {
     ChinxFunctionInfo *ChinxFI = MF.getInfo<ChinxFunctionInfo>();
     unsigned Reg = ChinxFI->getSRetReturnReg();
     if (!Reg)

@@ -38,7 +38,7 @@ public:
       : SelectionDAGISel(TM, OL), Subtarget(nullptr) {}
 
   // Pass Name
-  const char *getPassName() const override {
+  StringRef getPassName() const override {
     return "CHINX DAG->DAG Pattern Instruction Selection";
   }
 
@@ -60,7 +60,9 @@ private:
   }
   
   // Complex Pattern
-  bool SelectAddr(SDNode *Parent, SDValue Addr, SDValue& Base, SDValue& Offset);
+  bool SelectADDRls(SDNode *Parent, SDValue Addr, SDValue& Base, SDValue& Offset);
+
+  bool SelectADDRio(SDValue Addr, SDValue &Base, SDValue &Offset);
 
   void Select(SDNode *N) override;
 

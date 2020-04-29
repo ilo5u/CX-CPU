@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2020/03/28
+// Create Date: 2020/03/25 10:32:09
 // Design Name: 
-// Module Name: chinx_hilo
+// Module Name: chinx_pc
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,26 +20,19 @@
 //////////////////////////////////////////////////////////////////////////////////
 `include "defines.vh"
 
-module chinx_hilo(
+module chinx_pc(
     input wire clk,
-    input wire we,
-    input wire [`HILO_WIDTH - 1:0] hi_i,
-    input wire [`HILO_WIDTH - 1:0] lo_i,
-    output wire [`HILO_WIDTH - 1:0] hi_o,
-    output wire [`HILO_WIDTH - 1:0] lo_o
+    input wire rst,
+    input wire [`ADDR_WIDTH - 1:0] pc_i,
+    output reg [`ADDR_WIDTH - 1:0] pc_o
 );
 
-reg [`HILO_WIDTH - 1:0] hi_r;
-reg [`HILO_WIDTH - 1:0] lo_r;
-
-always @(posedge clk) begin
-    if (we == `LEV_H) begin
-        hi_r <= hi_i;
-        lo_r <= lo_i;
+always_ff @(posedge clk) begin
+    if (rst == `LEV_H) begin
+        pc_o <= `ADDR_WIDTH'd0;
+    end else begin
+        pc_o <= pc_i;
     end
 end
-
-assign hi_o = hi_r;
-assign lo_o = lo_r;
 
 endmodule

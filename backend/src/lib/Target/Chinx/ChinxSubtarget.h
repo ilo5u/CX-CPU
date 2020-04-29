@@ -1,4 +1,5 @@
-//===-- ChinxSubtarget.h - Define Subtarget for the Chinx ---------*- C++ -*-===//
+//===-- ChinxSubtarget.h - Define Subtarget for the Chinx ---------*- C++
+//-*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -19,9 +20,9 @@
 #include "ChinxInstrInfo.h"
 
 #include "llvm/CodeGen/SelectionDAGTargetInfo.h"
+#include "llvm/CodeGen/TargetSubtargetInfo.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/MC/MCInstrItineraries.h"
-#include "llvm/Target/TargetSubtargetInfo.h"
 #include <string>
 
 #define GET_SUBTARGETINFO_HEADER
@@ -37,20 +38,14 @@ class ChinxSubtarget : public ChinxGenSubtargetInfo {
 
 public:
   bool HasDummy;
+  bool HasSet;
   bool HasAll;
   bool IsLittle;
-  bool EnableOverflow;
-  bool HasPush;
-  bool HasCall;
+  bool EnableOverflow{false};
 
-  enum FeatureEnum {
-    Chinx1, Chinx2, Chinx3, ChinxMax
-  };
+  enum FeatureEnum { Chinx1, Chinx2, Chinx3, ChinxMax };
 
-  enum ArchEnum {
-    ChinxDefault, ChinxI, ChinxII
-  };
-
+  enum ArchEnum { ChinxDefault, ChinxI, ChinxII };
 
   bool hasFeature_1() const { return ChinxFeatureVersion >= Chinx1; }
   bool hasFeature_2() const { return ChinxFeatureVersion >= Chinx2; }
@@ -60,7 +55,7 @@ public:
 protected:
   FeatureEnum ChinxFeatureVersion;
   ArchEnum ChinxArchVersion;
-  
+
   InstrItineraryData InstrItins;
   const ChinxTargetMachine &TM;
   Triple TargetTriple;
@@ -76,8 +71,9 @@ public:
 
   /// This construtor initializes the data members to match that
   /// of the specified triple.
-  ChinxSubtarget(const Triple &TT, const std::string &CPU, const std::string &FS,
-                 bool little, const ChinxTargetMachine &_TM);
+  ChinxSubtarget(const Triple &TT, const std::string &CPU,
+                 const std::string &FS, bool little,
+                 const ChinxTargetMachine &_TM);
 
   /// Vitual function, must have
   /// ParseSubtargetFeatures - Parse features string setting specified
@@ -90,17 +86,16 @@ public:
   bool hasChinxII() const { return ChinxArchVersion >= ChinxII; }
   bool isChinxII() const { return ChinxArchVersion == ChinxII; }
 
+  /// Used in ChinxInstrInfo.td, e.g. 'Predicates' expression
   /// Features related to the presence of specific instructions.
   bool enableOverflow() const { return EnableOverflow; }
   bool disableOverflow() const { return !EnableOverflow; }
-  bool hasPush() const { return HasPush; }
-  bool hasCall() const { return HasCall; }
+
+  bool hasSet() const { return HasSet; }
 
   bool abiUsesSoftFloat() const;
 
-  bool enableInterruptPass() const {
-    return hasChinxII();
-  }
+  bool enableInterruptPass() const { return hasChinxII(); }
 
   unsigned stackAlignment() const { return 8; }
 
@@ -111,8 +106,8 @@ public:
     return &TSInfo;
   }
 
-  const ChinxInstrInfo *getInstrInfo() const override { 
-    return InstrInfo.get(); 
+  const ChinxInstrInfo *getInstrInfo() const override {
+    return InstrInfo.get();
   }
 
   const TargetFrameLowering *getFrameLowering() const override {
@@ -131,6 +126,6 @@ public:
     return &InstrItins;
   }
 };
-} // End llvm namespace
+} // namespace llvm
 
 #endif

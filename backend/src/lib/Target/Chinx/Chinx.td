@@ -11,19 +11,17 @@ def Feature_3 : SubtargetFeature<"fe_3", "HasDummy", "true", "Enable instruction
 def Feature_All : SubtargetFeature<"fe_all", "HasDummy", "true", "Enable instructions.", [
     Feature_1, Feature_2, Feature_3
 ]>;
-def FeaturePush : SubtargetFeature<"push", "HasPush", "true", "Enable 'push' instruction.">;
-def FeatureCall : SubtargetFeature<"call", "HasCall", "true", "Enable 'call' instruction.">;
+def FeatureSet : SubtargetFeature<"set", "HasSet", "true", "Enable 'set' instruction.">;
 def FeatureChinxI : SubtargetFeature<"chinxI", "ChinxArchVersion", "ChinxI", "ChinxI ISA Support",
-                                     [Feature_All, FeaturePush]>;
+                                     [Feature_All]>;
 def FeatureChinxII : SubtargetFeature<"chinxII", "ChinxArchVersion", "ChinxII", "ChinxII ISA Support",
-                                     [Feature_All, FeaturePush, FeatureCall]>;
+                                     [Feature_All, FeatureSet]>;
 
 class Proc<string Name, list<SubtargetFeature> Features> :
     Processor<Name, ChinxGenericItineraries, Features>;
 
 def : Proc<"chinxI", [FeatureChinxI]>;
 def : Proc<"chinxII", [FeatureChinxII]>;
-
 
 def ChinxInstrInfo : InstrInfo;
 

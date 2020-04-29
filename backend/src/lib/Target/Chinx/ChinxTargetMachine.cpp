@@ -28,10 +28,10 @@ using namespace llvm;
 
 extern "C" void LLVMInitializeChinxTarget() {
     // Register the target.
-    RegisterTargetMachine<ChinxebTargetMachine>
-            X(TheChinxTarget);
+    //RegisterTargetMachine<ChinxebTargetMachine>
+    //        X(TheChinxTarget);
     RegisterTargetMachine<ChinxelTargetMachine>
-            Y(TheChinxelTarget);
+            Y(getTheChinxTarget());
 }
 
 static std::string computeDataLayout(const Triple &TT, StringRef CPU,
@@ -60,11 +60,17 @@ static std::string computeDataLayout(const Triple &TT, StringRef CPU,
   return Ret;
 }
 
-static Reloc::Model getEffectiveRelocModel(CodeModel::Model CM,
+static Reloc::Model getEffectiveRelocModel(bool JIT,
                                            Optional<Reloc::Model> RM) {
-    if (!RM.hasValue() || CM == CodeModel::JITDefault)
+    if (!RM.hasValue() || JIT)
         return Reloc::Static;
     return *RM;
+}
+
+static CodeModel::Model getEffectiveCodeModel(Optional<CodeModel::Model> CM) {
+  if (CM)
+    return *CM;
+  return CodeModel::Small;
 }
 
 // On function prologue, the stack is created by decrementing
@@ -72,15 +78,13 @@ static Reloc::Model getEffectiveRelocModel(CodeModel::Model CM,
 // offset from the stack/frame pointer, using StackGrowsUp enables
 // an easier handling.
 // Using CodeModel::Large enables different CALL behavior.
-ChinxTargetMachine::ChinxTargetMachine(const Target &T, const Triple &TT,
-                                       StringRef CPU, StringRef FS,
-                                       const TargetOptions &Options,
-                                       Optional<Reloc::Model> RM,
-                                       CodeModel::Model CM, CodeGenOpt::Level OL,
-                                       bool isLittle)
+ChinxTargetMachine::ChinxTargetMachine(const Target &T, const Triple &TT, StringRef CPU,
+                    StringRef FS, const TargetOptions &Options,
+                    Optional<Reloc::Model> RM, Optional<CodeModel::Model> CM,
+                    CodeGenOpt::Level OL, bool JIT, bool isLittle)
     : LLVMTargetMachine(T, computeDataLayout(TT, CPU, Options, isLittle), TT,
-                        CPU, FS, Options, getEffectiveRelocModel(CM, RM), CM,
-                        OL),
+                        CPU, FS, Options, getEffectiveRelocModel(JIT, RM),
+                        getEffectiveCodeModel(CM), OL),
       isLittle(isLittle),
       TLOF(make_unique<ChinxTargetObjectFile>()),
       ABI(ChinxABIInfo::computeTargetABI()),
@@ -96,8 +100,9 @@ ChinxebTargetMachine::ChinxebTargetMachine(const Target &T, const Triple &TT,
                                            StringRef CPU, StringRef FS,
                                            const TargetOptions &Options,
                                            Optional<Reloc::Model> RM,
-                                           CodeModel::Model CM, CodeGenOpt::Level OL)
-        : ChinxTargetMachine(T, TT, CPU, FS, Options, RM, CM, OL, false) {}
+                                           Optional<CodeModel::Model> CM,
+                                           CodeGenOpt::Level OL, bool JIT)
+    : ChinxTargetMachine(T, TT, CPU, FS, Options, RM, CM, OL, JIT, true) {}
 
 void ChinxelTargetMachine::anchor() {}
 
@@ -105,8 +110,9 @@ ChinxelTargetMachine::ChinxelTargetMachine(const Target &T, const Triple &TT,
                                            StringRef CPU, StringRef FS,
                                            const TargetOptions &Options,
                                            Optional<Reloc::Model> RM,
-                                           CodeModel::Model CM, CodeGenOpt::Level OL)
-        : ChinxTargetMachine(T, TT, CPU, FS, Options, RM, CM, OL, true) {}
+                                           Optional<CodeModel::Model> CM,
+                                           CodeGenOpt::Level OL, bool JIT)
+    : ChinxTargetMachine(T, TT, CPU, FS, Options, RM, CM, OL, JIT, true) {}
 
 
 const ChinxSubtarget *
@@ -137,7 +143,7 @@ namespace {
 /// Chinx Code Generator Pass Configuration Options.
 class ChinxPassConfig : public TargetPassConfig {
 public:
-  ChinxPassConfig(ChinxTargetMachine *TM, PassManagerBase &PM)
+  ChinxPassConfig(ChinxTargetMachine &TM, PassManagerBase &PM)
     : TargetPassConfig(TM, PM) {}
 
   ChinxTargetMachine &getChinxTargetMachine() const {
@@ -159,6 +165,6 @@ bool ChinxPassConfig::addInstSelector() {
 } // namespace
 
 TargetPassConfig *ChinxTargetMachine::createPassConfig(PassManagerBase &PM) {
-  return new ChinxPassConfig(this, PM);
+  return new ChinxPassConfig(*this, PM);
 }
 
