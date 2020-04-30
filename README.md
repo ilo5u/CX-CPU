@@ -341,9 +341,9 @@ FeatureBitset SubtargetFeatures::getFeatureBits(StringRef CPU,
 }
 ```
 
-To make and build the new backend correctly, we need to modify some CMake and LLVMBuild files. Obviously, we need to add ``Chinx`` identifier in the CMakeList.txt at the source root.
+To make and build the new backend correctly, we need to modify some CMake and LLVMBuild files. Obviously, we need to add ``Chinx`` identifier in the CMakeLists.txt at the source root.
 
-### src/CMakeList.txt
+### src/CMakeLists.txt
 
 ```cmake
 set(LLVM_ALL_TARGETS
@@ -351,7 +351,7 @@ Chinx
 )
 ```
 
-But if you would like to give the parameter **TARGETS_TO_BUILD=Chinx** manually every time running cmake, there is no need to add such description in the CMakeList.txt. I suggest that remove other targets in the CMakeList.txt except ``Chinx``, and ``Chinx`` will be the only default target to build.
+But if you would like to give the parameter **TARGETS_TO_BUILD=Chinx** manually every time running cmake, there is no need to add such description in the CMakeLists.txt. I suggest that remove other targets in the CMakeLists.txt except ``Chinx``, and ``Chinx`` will be the only default target to build.
 
 ### src/lib/Target/LLVMBuild.txt
 
@@ -362,7 +362,7 @@ subdirectories =
 
 ## Implementation
 
-Only codes added for description on ``Chinx`` are not enough,  more implementation codes are needed.
+Only codes added for registration on ``Chinx`` are not enough,  more implementation codes are needed.
 
 Before starting the implementation, we need to understand the focus of the back-end porting.
 
@@ -378,18 +378,20 @@ BE --> C[CHINX]
 BE --> OTT[...]
 ```
 
-Front-end would build **AST**(Abstract Syntax Tree) to represent the source code, and convert it as IR for the coming optimization. Usually, LLVM uses **CLang** as the front end to generate the **IR**(Intermediate Representation) code. After that, machine-independent optimization on IR is essential. The most important work of backend is to transfer the IR code to machine-dependent code, called assembly code or machine code. To write the backend, we will focus on **DAG**, the converted form of AST, and we will see that the lowering operation is aimed for conversion. Based on DAG, the backend will select instruction for each node in a basic block. After instruction selection, the backend would schedule instructions based on architecture info provided by the target machine. Then, serial passes like register allocation, prologue and epilogue insertion, peephole optimization and assembly printing will run in order.
+Front-end would build **AST**(Abstract Syntax Tree) to represent the source code, and convert it as IR for the coming optimization. Usually, LLVM uses **Clang** as the front end to generate the **IR**(Intermediate Representation) code. After that, machine-independent optimization on IR is essential. The most important work of backend is to transfer the IR code to machine-dependent code, called assembly code or machine code. To write the backend, we will focus on **DAG**, the converted form of AST, and we will see that the lowering operation is aimed for conversion. Based on DAG, the backend will select instruction for each node in a basic block. After instruction selection, the backend would schedule instructions based on architecture info provided by the target machine. Then, serial passes like register allocation, prologue and epilogue insertion, peephole optimization and assembly printing will run in order.
 
 ```mermaid
 graph LR
 IR[IR] --> DAG[DAG] --> L[Legalized DAG] --> IS[Instruction Selection] --> ISC[Scheduling] --> RA[Register Allocation] --> OT[...] --> AP[Assembly]
 ```
 
+Now, we have had a brief look of the architecture of LLVM and how does the backend work, then we will follow steps to build the backend to support ``Chinx``.
 
+Before starting, there is a suggestion that you could better to have a glance over the official document here https://llvm.org/docs/WritingAnLLVMBackend.html
 
-## Files
+Obviously, writing a backend to support new target machine needs a lot of time and coding work. Fortunately, some processors, like MIPS, have been supported by LLVM. Due to that, we can use them for reference, thanking for the open LLVM and MIPS.
 
-This directory tree is modified by the reference [[4]], Guides I-12.
+Let's have a overlook on the structure of the implementation coding files.
 
 ```cpp
 --> lib/Target/Chinx/
@@ -416,7 +418,10 @@ This directory tree is modified by the reference [[4]], Guides I-12.
     --- ChinxSubtarget.h
     --- ChinxTargetMachine.cpp
     --- ChinxTargetMachine.h
+    --- ChinxTargetObjectFile.cpp
+    --- ChinxTargetObjectFile.h
     --- CMakeLists.txt
+    --- LLVMBuild.txt
 ------> InstPrinter/
         --- ChinxInstPrinter.cpp
         --- ChinxInstPrinter.h
@@ -424,7 +429,9 @@ This directory tree is modified by the reference [[4]], Guides I-12.
         --- LLVMBuild.txt
     --- LLVMBuild.txt
 ------> MCTargetDesc/
-        --- ChinxAsmBackend.cpp
+        --- ChinxABIInfo.cpp
+    	--- ChinxABIInfo.h
+    	--- ChinxBaseInfo.h
         --- ChinxMCAsmInfo.cpp
         --- ChinxMCAsmInfo.h
         --- ChinxMCTargetDesc.cpp
@@ -436,6 +443,403 @@ This directory tree is modified by the reference [[4]], Guides I-12.
         --- CMakeLists.txt
         --- LLVMBuild.txt
 ```
+
+### ChinxTargetMachine
+
+Since the LLVM is written by C++, implementing kinds of classes, especially inherited classes, is the center issue. **LLVMTargetMachine** is designed as a base for targets implemented with the LLVM target-independent code generator<sup>[[2]]</sup>. Thus, the entry of writing backends is implementing class **ChinxTargetMachine** inherited from **LLVMTargetMachine** in *ChinxTargetMachine.cpp* and *ChinxTargetMachine.h*. If you do not have any idea to write the details of the virtual methods in **ChinxTargetMachine**, you can easily copy the present codes in MIPS or SPARC or others and rewrite them. For example, some code fragments need to be modified as below
+
+```cpp
+// ---------------------------- //
+//    ChinxTargetMachine.cpp    //
+// ---------------------------- //
+extern "C" void LLVMInitializeChinxTarget() {
+    // Register the target.
+    RegisterTargetMachine<ChinxTargetMachine>
+            X(getTheChinxTarget());
+    // getTheChinxTarget can fetch the unique instance
+    // of class Target
+}
+```
+
+If your custom CPU supports both little-endian and big-endian, you could implement a class **XXXTargetMachine** inherited from **LLVMTargetMachine**, then create a class **XXXelTargetMachine** inherited from **XXTargetMachine** to support little-endian and a class **XXXebTargetMachine** inherited from **XXTargetMachine** to support big-endian, like what MIPS has done. The initialization method would be modified as below,
+
+```cpp
+extern "C" void LLVMInitializeXXXTarget() {
+    // Register the target.
+    RegisterTargetMachine<XXXelTargetMachine>
+            X(getTheXXXelTarget()); // little-endian
+    RegisterTargetMachine<XXXebTargetMachine>
+            Y(getTheXXXebTarget()); // big-endian
+}
+```
+
+```mermaid
+graph RL
+A0[XXXelTargetMachine] --> B[XXXTargetMachine]
+A1[XXXebTargetMachine] --> B
+B --> C[LLVMTargetMachine]
+```
+
+cause **LLVMTargetMachine** will accept a parameter to determine whether the specific machine is little-endian or big-endian.
+
+### ChinxTargetInfo
+
+**ChinxTargetMachine** holds all the sources that would be used during the compiling time, especially the instance of **ChinxSubtarget** as below,
+
+```cpp
+class ChinxTargetMachine : public LLVMTargetMachine {
+  ChinxSubtarget Subtarget;
+}
+```
+
+But before building an instance of **ChinxTargetMachine**, LLVM needs to create a generic object of class **Target**, and inserts the object into the lists consisting of all the supported CPUs. 
+
+```mermaid
+graph TB
+M[0: main] --> A[1: llvm::InitializeAllTargets] --> B[2: llvm::InitializeAllTargetInfos] --> C[3: LLVMInitializeChinxTargetInfo] -.-> A --> D[4: LLVMInitializeChinxTarget]
+```
+
+From the call graph we can see that the initialization of **ChinxTargetMachine**(4) is behind the call of **LLVMInitializeChinxTargetInfo**, cause we need to register ``Chinx`` first, but not use **ChinxTargetMachine**.
+
+```cpp
+// ------------------------------ //
+//  TargetInfo/ChinxTargetInfo.cpp
+// ------------------------------ //
+using namespace llvm;
+Target &llvm::getTheChinxTarget() {
+  static Target TheChinxTarget;
+  return TheChinxTarget;
+}
+extern "C" void LLVMInitializeChinxTargetInfo() {
+    RegisterTarget<Triple::chinx, true>
+            X(getTheChinxTarget(), "chinx", "Chinx", "Chinx");
+}
+```
+
+In the method *LLVMInitializeChinxTargetInfo*, LLVM would bind the instance named **TheChinxTarget** with string "chinx" which will be used when specify the CPU as ``Chinx`` compiling *.bc files or match the target to build like what mentioned before, and the third string "Chinx" represents the backend name, just like the *ChinxRegisterInfo* or *ChinxInstrInfo* and so on. 
+
+Besides, this allows the **TargetRegistry** to look up the target by name or by target triple<sup>[[2]]</sup>.
+
+After creating an instance representing ``Chinx``, the registration is done, then the method *LLVMInitializeChinxTarget* will be called to initialize this instance, or supplement other critical info of ``Chinx`` by pass the type template **ChinxTargetMachine**.
+
+### Register Definition
+
+Virtual registers would be used in generating IR codes, so there are infinite registers can be allocated. But any CPU would have finite registers, thus we need to describe the register information in the source by TableGen tool.
+
+```c++
+// ---------------------------- //
+//     ChinxRegisterInfo.td     //
+// ---------------------------- //
+class ChinxReg<bits<16> Enc, string n> : Register<n> {
+    let HWEncoding = Enc;
+    let Namespace = "Chinx";
+}
+class ChinxGPRReg<bits<16> Enc, string n> : ChinxReg<Enc, n>;
+```
+
+Cause ``Chinx`` only holds 32 registers, 16-bit encoding is enough.
+
+```cpp
+// ---------------------------- //
+//     ChinxRegisterInfo.td     //
+// ---------------------------- //
+let Namespace = "Chinx" in {
+    def ZERO : ChinxGPRReg<0, "zero">, DwarfRegNum<[0]>;
+    def AT : ChinxGPRReg<1, "1">, DwarfRegNum<[1]>;
+    def V0 : ChinxGPRReg<2, "2">, DwarfRegNum<[2]>;
+    ...
+    def FP : ChinxGPRReg<30, "fp">, DwarfRegNum<[30]>;
+    def RA : ChinxGPRReg<31, "ra">, DwarfRegNum<[31]>;
+}
+```
+
+The keyword **def** will define a list of registers from 0 to 31. The first parameter passed to **ChinxGPRReg** is the encoding of each register, different from the parameter in **DwarfRegNum**, which is the index of each register used in the backend. The second parameter passed to **ChinxGPRReg** will be used in assembly printing. For example, when print the register indexed 0, the string "$zero" will be printed, and the same for others.
+
+If you want to combine some registers together for special purpose, you can define a new group, which will actually be a class after handled by tablegen. For example,
+
+```cpp
+// ---------------------------- //
+//     ChinxRegisterInfo.td     //
+// ---------------------------- //
+def CPURegs : RegisterClass<"Chinx", [i32], 32, (add
+    ZERO, AT,
+    V0, V1, A0, A1, A2, A3,
+    T0, T1, T2, T3, T4, T5, T6, T7, T8, T9,
+    S0, S1, S2, S3, S4, S5, S6, S7,
+    K0, K1,
+    GP, SP, FP, RA)>;
+def DstRegs : RegisterClass<"Chinx", [i32], 32, (add (sub CPURegs, ZERO, K0, K1))>;
+def MEMRegs : RegisterClass<"Chinx", [i32], 32, (add (sub CPURegs, ZERO, K0, K1, RA))>;
+```
+
+**CPURegs** contains all the 32 registers, and **MEMRegs** contains all registers except "ZERO; K0; K1; RA", cause load and store operations would not use these four registers.  The "i32" parameter means its type, which is defined by the LLVM, 32-bit integer.
+
+Since all available registers in ``Chinx`` defined, you can refer them in other source files if needed. Besides register definitions in *ChinxRegisterInfo.td*, we need to implement a class providing interfaces for accessing these resources.
+
+In *ChinxRegisterInfo.h* and *ChinxRegisterInfo.cpp*,  special purpose for each register will be defined, like reserved registers. For example,
+
+```cpp
+// ----------------------------- //
+//        ChinxRegisterInfo.h    //
+// ----------------------------- //
+class ChinxRegisterInfo : public ChinxGenRegisterInfo {
+public:
+  const MCPhysReg *getCalleeSavedRegs(const MachineFunction *MF) const override; // sprcify which register must be saved when function call occurs
+  BitVector getReservedRegs(const MachineFunction &MF) const override; // specify which register can not be writable
+  unsigned getFrameRegister(const MachineFunction &MF) const override; // specify which register to be the frame register
+};
+// ----------------------------- //
+//      ChinxRegisterInfo.cpp    //
+// ----------------------------- //
+const MCPhysReg *
+ChinxRegisterInfo::getCalleeSavedRegs(const MachineFunction *MF) const {
+  return CSR_O32_SaveList; 
+  // CSR_O32_SaveList will be explained
+  // in talking about file ChinxCallingConv.td
+}
+BitVector ChinxRegisterInfo::
+getReservedRegs(const MachineFunction &MF) const {
+  static const MCPhysReg ReservedCPURegs[] = {
+      Chinx::ZERO, Chinx::AT, Chinx::K0, Chinx::K1, Chinx::SP,
+      Chinx::RA // compatible with declarations in ChinxRegisterInfo.td
+  };
+  BitVector Reserved(getNumRegs());
+  for (unsigned I = 0; I < array_lengthof(ReservedCPURegs); ++I)
+      Reserved.set(ReservedCPURegs[I]);
+  return Reserved;
+}
+unsigned ChinxRegisterInfo::getFrameRegister(const MachineFunction &MF) const {
+  const TargetFrameLowering *TFI = MF.getSubtarget().getFrameLowering();
+  return TFI->hasFP(MF) ? Chinx::FP : Chinx::SP;
+}
+```
+
+The above three methods rewrite its virtual interfaces in class **ChinxGenRegisterInfo**, which is inherited from the base provided by LLVM, to let the backend run in a compatible way. Most works are like the above showed to rewrite the present methods. 
+
+The superclass **ChinxGenRegisterInfo** is automatically created by tablengen tool after processing *ChinxRegisterInfo.td*. The file structure is as below,
+
+```mermaid
+graph LR
+A[ChinxRegisterInfo.td] --tablegen--> B[ChinxGenRegisterInfo.inc]
+C[ChinxRegisterInfo.h] --> D[ChinxRegisterInfo.o]
+B --> D
+B -.inline.-> C
+E[ChinxRegisterInfo.cpp] --> D
+```
+
+### Instruction Definition
+
+Besides the necessary register information mainly used for register allocation, we need to describe the instruction structure to let the backend select compatible instructions for each IR statement. Like what has done for adding register info, we need to write *.td, *.cpp and *.h files for instruction description. 
+
+In *ChinxInstrFormats.td*, we can define kinds of instruction structures. There are three structures in ``Chinx``, register instruction for operating 3 register operands at most named "FR", immediately instruction for operating one immediate value and 2 register operands at most named "FI", and jumping instruction for operating only one address value named "FJ".
+
+| Type | Opcode | Operand 1  | Operand 2  | Operand 3  | Reserved |
+| ---- | ------ | ---------- | ---------- | ---------- | -------- |
+| FR   | 6 Bits | Ra(5 Bits) | Rb(5 Bits) | Rc(5 Bits) | 11 Bits  |
+
+| Type | Opcode | Operand 1  | Operand 2  | Operand 3          |
+| ---- | ------ | ---------- | ---------- | ------------------ |
+| FI   | 6 Bits | Ra(5 Bits) | Rb(5 Bits) | Immediate(16 Bits) |
+
+| Type | Opcode | Operand          |
+| ---- | ------ | ---------------- |
+| FJ   | 6 Bits | Address(26 Bits) |
+
+Take the definition of "FR" for example,
+
+```cpp
+class ChinxInst<dag outs, dag ins, string asmstr, list<dag> pattern, InstrItinClass itin, Format f> :
+    Instruction {
+        field bits<32> Inst;
+        let Namespace = "Chinx";
+        bits<6> Opcode = 0;
+        let Inst{31-26} = Opcode;
+        let OutOperandList = outs;
+        let InOperandList = ins;
+        let AsmString = asmstr;
+        let Pattern = pattern;
+        let Itinerary = itin;
+        bits<4> FormBits = Form.Value;
+        ...
+    }
+class FR<bits<6> op, dag outs, dag ins, string asmstr, list<dag> pattern, InstrItinClass itin> :
+    ChinxInst<outs, ins, asmstr, pattern, itin, FrmR>
+    {
+        bits<5> ra;
+        bits<5> rb;
+        bits<5> rc;
+        bits<11> reserved;
+        let Opcode = op;
+        let Inst{25-21} = ra;
+        let Inst{20-16} = rb;
+        let Inst{15-11} = rc;
+        let Inst{10-0} = reserved;
+    }
+```
+
+From above, we need to define a custom base of instruction structure named **ChinxInst**, which inherited from **Instruction** provided by LLVM. We need to notice that the "ins" and "outs" parameters are the same type named "dag", cause they are described by DAG which converted from IR, or AST for sure.
+
+```mermaid
+graph TB
+subgraph DAG
+D1[+] --> D[a]
+D1 --> D2[-]
+D2 --> D[a]
+D2 --> E[b]
+end
+subgraph AST
+P1[+] --> A0[a]
+P1 --> P2[-]
+P2 --> A1[a]
+P2 --> C[b]
+end
+```
+
+Actually, the structure of DAG in LLVM backend is so complicated, you can use ``llc -view-isel-dags ...`` to have a detail look on each DAG node. In brief, the DAG node is constructed by node type, input and output operands list and additional descriptions.
+
+Based on the defined instruction structures, we can define kinds of instructions, like ADD, SUB, and so on. Let's have a brief look on it,
+
+```cpp
+// Arithmetic and logical instructions with 3 register operands.
+class ArithLogicR<bits<6> op, string instr_asm, SDNode OpNode,
+	InstrItinClass itin, RegisterClass RC, bit isComm = 0> :
+	FR<op, (outs DstRegs:$ra), (ins RC:$rb, RC:$rc),
+		!strconcat(instr_asm, "\t$ra, $rb, $rc"),
+		[(set DstRegs:$ra, (OpNode RC:$rb, RC:$rc))], itin> {
+	let reserved = 0;
+	let isCommutable = isComm; // e.g. add rb rc =  add rc rb
+	let isReMaterializable = 1;
+}
+```
+
+**ArithLogicR** is defined as a matching rule for instruction operating 3 register operands. It can be used for catching instructions like ADD, SUB, OR, AND. But this class is only a declaration, we need to define instances for instruction selection.
+
+```cpp
+def ADD : ArithLogicR<0x02, "add", add, IIAlu, CPURegs, 1>;
+def SUB : ArithLogicR<0x03, "sub", sub, IIAlu, CPURegs>;
+```
+
+The first parameter "0x02" in the definition of "ADD" represents its 6-bit opcode encoding. The second parameter string "add" will be used for assembly printing and the next "add" is an identity for the generic instruction selection pre-defined by LLVM. In fact, the "add" identity represents a DAG node structure, and for nodes with the same structure will select instruction "ADD" to replace it, that means instruction selection is essentially mapping each DAG node or nodes to custom instruction or instructions. The "IIAlu" parameter identifies the cost of "ADD" operation, and this is defined in *ChinxSchedule.td* mainly for instruction scheduling to optimize pipeline.
+
+```cpp
+// ------------------------------- //
+//        ChinxSchedule.td         //
+// ------------------------------- //
+def ALU : FuncUnit;
+def IIAlu    : InstrItinClass;
+def IILoad   : InstrItinClass;
+def IIStore  : InstrItinClass;
+def IIBranch : InstrItinClass;
+def IIPseudo : InstrItinClass;
+def ChinxGenericItineraries : ProcessorItineraries<[ALU], [], [
+    InstrItinData<IIAlu,    [InstrStage<1, [ALU]>]>,
+    InstrItinData<IILoad,   [InstrStage<3, [ALU]>]>,
+    InstrItinData<IIStore,  [InstrStage<3, [ALU]>]>,
+    InstrItinData<IIBranch, [InstrStage<2, [ALU]>]>
+]>;
+```
+
+Considering that there are so many instruction definitions, you can refer them in *backend/src/lib/Target/Chinx/ChinxInstrInfo.td* to look the details.
+
+Similarly, *ChinxInstrInfo.cpp* and *ChinxInstrInfo.h* will supplement some methods on instructions defined in *ChinxInstrInfo.td*. For example, how to load and store the stack to handle the local variables are defined as below,
+
+```cpp
+// --------------------------------------------- //
+//             ChinxInstrInfo.h                  //
+// --------------------------------------------- //
+class ChinxInstrInfo : public ChinxGenInstrInfo {
+  ...
+  void storeRegToStackSlot(MachineBasicBlock &MBB,
+    MachineBasicBlock::iterator MBBI,
+    unsigned SrcReg, bool isKill, int FrameIndex,
+    const TargetRegisterClass *RC,
+    const TargetRegisterInfo *TRI) const override {
+    storeRegToStack(MBB, MBBI, SrcReg, isKill, FrameIndex, RC, TRI, 0);
+  }
+  void loadRegFromStackSlot(MachineBasicBlock &MBB,
+    MachineBasicBlock::iterator MBBI,
+    unsigned DestReg, int FrameIndex,
+    const TargetRegisterClass *RC,
+    const TargetRegisterInfo *TRI) const override {
+    loadRegFromStack(MBB, MBBI, DestReg, FrameIndex, RC, TRI, 0);
+  }
+  ...
+}
+// --------------------------------------------- //
+//              ChinxInstrInfo.cpp               //
+// --------------------------------------------- //
+void ChinxInstrInfo::storeRegToStack(MachineBasicBlock &MBB,
+	MachineBasicBlock::iterator I, unsigned SrcReg, bool isKill, int FI,
+	const TargetRegisterClass *RC, const TargetRegisterInfo *TRI, int64_t Offset) const {
+	DebugLoc DL;
+	MachineMemOperand *MMO = GetMemOperand(MBB, FI, MachineMemOperand::MOStore);
+	unsigned Opc = Chinx::SW;
+	BuildMI(MBB, I, DL, get(Opc)).addReg(SrcReg, getKillRegState(isKill))
+		.addFrameIndex(FI).addImm(Offset).addMemOperand(MMO);
+}
+void ChinxInstrInfo::loadRegFromStack(MachineBasicBlock &MBB,
+	MachineBasicBlock::iterator I, unsigned DestReg, int FI,
+	const TargetRegisterClass *TRC,
+	const TargetRegisterInfo *TRI, int64_t Offset) const {
+	DebugLoc DL;
+	if (I != MBB.end()) DL = I->getDebugLoc();
+	MachineMemOperand *MMO = GetMemOperand(MBB, FI, MachineMemOperand::MOLoad);
+	unsigned Opc = Chinx::LW;
+	BuildMI(MBB, I, DL, get(Opc), DestReg).addFrameIndex(FI).addImm(Offset)
+		.addMemOperand(MMO);
+}
+```
+
+Local variables are stored in the stack, how to allocate space for them needs to rewrite the virtual methods *storeRegToSlockSlot* and *loadRegToSlockSlot*. By calling method *BuildMI*, we can build a compatible machine instruction with ``Chinx``, noticing that the local variable "Opc" is assigned with "Chinx::SW" or "Chinx::LW", which is defined in *ChinxInstrInfo.td* by "def : LW ..." or "def : SW ...". For example,
+
+```mermaid
+graph TB
+subgraph ASM
+B0["addi $1, $0, 0"] --> B1["sw $1, 4($0)"]
+end
+subgraph Function
+A0["int a = 0;"] --> A1["int b = 0;"]
+end
+A0 -.-> B0
+B1 -.-> A1
+```
+
+
+
+Besides local variables, parameters passed by function call are also stored in stack, and how to handle this situation is defined in *ChinxCallingConv.td*, *ChinxFrameLowering.h* and *ChinxFrameLowering.cpp*. When execute function call, parameters and return values will be saved into registers in priority and the rest will be saved into the stack. Once registers are needed, we must make sure that the value would be restored correctly when the callee returned.
+
+```cpp
+// ----------------------- //
+//    ChinxCallingConv.td  //
+// ----------------------- //
+def CSR_O32 : CalleeSavedRegs<(add FP, RA,
+    (sequence "S%u", 7, 0))>;
+def RetCC_ChinxEABI : CallingConv<[
+    // i32 are returned in registers V0, V1, A0, A1, A2, A3
+    CCIfType<[i32], CCAssignToReg<[V0, V1, A0, A1, A2, A3]>>
+]>;
+```
+
+From above, ``Chinx`` rules that $s0-$s7, $fp, and $ra must be saved when function call occurs, and the return values are stored into $v0-$v1, $a0-$a3 in priority. Besides, insertions of prologue and epilogue are necessary to ensure the environments would not be damaged due to function call. They are the critical methods designed in class **ChinxFrameLowering** as below,
+
+```cpp
+// ------------------------ //
+//  ChinxFrameLowering.h    //
+// ------------------------ //
+class ChinxFrameLowering : public TargetFrameLowering {
+  /// emitProlog/emitEpilog - These methods insert prolog and epilog code into
+  /// the function.
+  void emitPrologue(MachineFunction &MF, MachineBasicBlock &MBB) const override;
+  void emitEpilogue(MachineFunction &MF, MachineBasicBlock &MBB) const override;
+  ...
+}
+```
+
+### Instruction Selection
+
+If the custom instructions are all designed from the generic instructions, like ADD, it is easy to select the compatible instructions, just with the help of the default matching rules pre-defined by LLVM. I will focus on how to port an instruction that designed for special purpose.
+
+"SET" is an instruction of "FI" type, to some degree, resemble to "SB" instruction. This instruction would set the 8-bit data unit, indexed by the specified address, as an input port or output port, thus it is an instruction used for control but not memory storage.
 
 ## Building
 
