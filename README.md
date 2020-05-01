@@ -1,3 +1,5 @@
+Tips: If graphs can not display properly, you can try download the **Readme.md** and open it with **Typora**, https://www.typora.io/
+
 # Forward
 
 This is a project about graduation thesis to design and build a custom 32-bit CPU named ``Chinx``, by using SystemVerilog HDL, with its backend design on LLVM. ``Chinx`` owns 32-bit data bus and 8-bit address bus, cause considering that there are not so many data or instructions needed to store, and 32-bit registers. The data storage only supports aligned ``load`` and ``store`` operations. Especially, the storage model uses Harvard architecture. 
@@ -18,7 +20,7 @@ Include all description pictures used in markdown files.
 
 ## tools
 
-**If your development is built on Linux system**
+**If your development is built on Linux**
 
 Download source codes with llvm development tools from ``http://llvm.org/releases/download.html`` and compile manually.
 1. llvm-7.0.0.src.tar.xz ``e.g. wget http://releases.llvm.org/7.0.0/llvm-7.0.0.src.tar.xz``
@@ -29,13 +31,13 @@ Download source codes with llvm development tools from ``http://llvm.org/release
    4. untar **compiler-rt-7.0.0.src.tar.xz** and rename it as **compiler-rt**, then move it to **project**, the subdirectory of the source codes root.
 3. use ``cmake``, like the normally steps of building, with ``configure ``, ``cmake ../`` and ``cmake --build .`` in the building directory. Detailed description referred to https://llvm.org/docs.
 
-**If your development is built on Windows system**
+**If your development is built on Windows**
 
 1. Download the source codes from http://llvm.org/releases/download.html, like the operations on **Linux**.
 
 2. To make the back-end porting and debug easily, download and install ``visual studio``.
 
-   1. Create a **CMake** project at the root directory, and configure the **TARGET_TO_BUILD** parameter as **Chinx** to build a new backend to support ``Chinx``.
+   1. Create a **CMake** project at the root directory, and configure the **-DLLVM_TARGETS_TO_BUILD** parameter as **Chinx** to build a new backend to support ``Chinx``.
 
    2. The CMake configuration and build info is described in the **CMakeSettings.json**. Like this,
 
@@ -59,7 +61,7 @@ Download source codes with llvm development tools from ``http://llvm.org/release
       }
       ```
 
-3. Download and install ``Vivado 2018.3`` and other ``Xilinx`` design tools, with ``ModelSim`` optionally.
+3. Download and install ``Vivado 2018.3`` and other ``Xilinx`` design tools, with ``ModelSim`` optionally, if you'd like to have a try on implementing ``Chinx`` as a complete SoC.
 
 # LLVM
 
@@ -81,8 +83,7 @@ Since the LLVM compilation tools support the techniques that by writing compiler
 
 *TableGen* files consist of two key types: *class* and *definitions*, both of which are considered *records*.<sup>[[3]]</sup><font size=4>``Records = Unique Name + List of Values + List of Superclasses``</font>
 
-
-*TableGen definitions* are marked with the **def** keyword. For example, <font size=4>```def Obj : Base<"param1", "param2">;```</font> **Obj** is **Base** record initialised with values **param1** and **param2**. Especially, most target *TableGen* files include the generic ones in **"include//llvm//Target"**.
+*TableGen definitions* are marked with the **def** keyword. For example, <font size=4>```def Obj : Base<"param1", "param2">;```</font> **Obj** is **Base** record initialised with values **param1** and **param2**. Especially, most target *TableGen* files include the generic ones in **"include/llvm/Target"**.
 
 *TableGen classes* are abstract records that are used to build and describe other records. They are marked with the **class** keyword.
 
@@ -96,11 +97,6 @@ The power in *TableGen* is to interpret the source files into an internal repres
 3. Describe the instruction set of Chinx. Use *TableGen* to generate code for target-specific instructions from target-specific versions of **ChinxInstrFormats.td** and **ChinxInstrInfo.td**. Besides, write additional code for a subclass of the **ChinxInstrInfo** class to represent machine instructions supported by the model machine.
 4. Describe the selection and conversion of the *LLVM IR* from a Directed Acyclic Graph``DAG`` representation of instructions to Chinx instructions. Use *TableGen* to generate code that matches patterns and selects instructions based on additional information in **ChinxInstrInfo.td**. Besides, write code for **ChinxISelDAGToDAG.cpp** to perform pattern matching and DAG-to-DAG instruction selection. Also write code in **ChinxISelLowering.cpp** to replace or remove operations and data types that are not supported natively in a *SelectionDAG*.
 5. Write code for an assembly printer that converts *LLVM IR* to a *GAS* format for the model machine. To do so, assembly strings to the instructions shuold be defined in **ChinxInstrInfo.td** and also write code for a subclass of *AsmPrinter* that performs the LLVM-to-assembly conversion and a trivial subclass of **ChinxAsmInfo**.
-
-## Preliminaries
-
-1. Create a subdirectory named ``Chinx`` under ``lib/Target`` to hold all the files related to the model machine, **Chinx** target.
-2. Create a ``CMakeLists.txt`` in ``lib/Target/Chinx``, may easily copy and modify an existed file like the ``CMakeLists.txt`` of **MIPS**. It must also be noted that the ``CMakeLists.txt`` contains the ``LLVM_TARGET_DEFINITIONS`` variable.
 
 ## Registration
 
@@ -201,25 +197,7 @@ Describe some info about relocation, used for generating ELF file.
 #endif
 ELF_RELOC(R_CHINX_NONE,                0)
 ELF_RELOC(R_CHINX_32,                  2)
-ELF_RELOC(R_CHINX_HI16,                5)
-ELF_RELOC(R_CHINX_LO16,                6)
-ELF_RELOC(R_CHINX_GPREL16,             7)
-ELF_RELOC(R_CHINX_LITERAL,             8)
-ELF_RELOC(R_CHINX_GOT16,               9)
-ELF_RELOC(R_CHINX_PC16,               10)
-ELF_RELOC(R_CHINX_CALL16,             11)
-ELF_RELOC(R_CHINX_GPREL32,            12)
-ELF_RELOC(R_CHINX_PC24,               13)
-ELF_RELOC(R_CHINX_GOT_HI16,           22)
-ELF_RELOC(R_CHINX_GOT_LO16,           23)
-ELF_RELOC(R_CHINX_RELGOT,             36)
-ELF_RELOC(R_CHINX_TLS_GD,             42)
-ELF_RELOC(R_CHINX_TLS_LDM,            43)
-ELF_RELOC(R_CHINX_TLS_DTPREL_HI16,    44)
-ELF_RELOC(R_CHINX_TLS_DTPREL_LO16,    45)
-ELF_RELOC(R_CHINX_TLS_GOTTPREL,       46)
-ELF_RELOC(R_CHINX_TLS_TPREL32,        47)
-ELF_RELOC(R_CHINX_TLS_TPREL_HI16,     49)
+...
 ELF_RELOC(R_CHINX_TLS_TPREL_LO16,     50)
 ELF_RELOC(R_CHINX_GLOB_DAT,           51)
 ELF_RELOC(R_CHINX_JUMP_SLOT,          127)
@@ -839,7 +817,252 @@ class ChinxFrameLowering : public TargetFrameLowering {
 
 If the custom instructions are all designed from the generic instructions, like ADD, it is easy to select the compatible instructions, just with the help of the default matching rules pre-defined by LLVM. I will focus on how to port an instruction that designed for special purpose.
 
-"SET" is an instruction of "FI" type, to some degree, resemble to "SB" instruction. This instruction would set the 8-bit data unit, indexed by the specified address, as an input port or output port, thus it is an instruction used for control but not memory storage.
+"SET" is an instruction of "FI" type, to some degree, resemble to "SB" instruction. This instruction would set the 8-bit data unit, indexed by the specified address, as an input port or output port, thus it is an instruction used for control but not memory storage. For example,
+
+```c
+// test.c
+#define CTRL *((volatile unsigned char *)0x3)
+int main() {
+  CTRL = 24;
+  char a = 4;
+}
+```
+
+After this c source file compiled, it would be like this,
+
+```assembly
+# test.s
+...
+addi $2, $0, 24
+addi $3, $0, 3
+set  $2, 0($3)   # use set to replace sb
+addi $2, $0, 4
+sb   $2, 0($sp)  # use sb normally
+...
+```
+
+Since IO ports are fixed in address, writing or reading the IO ports will send the absolute address without using $sp or $gp, which only used for local variables or global variables. Thus, we can differentiate the IO control instruction and the memory storage instruction. But how we implement this feature in backends?
+
+Let's have a look on the difference between this two IR statements, converting from "CTRL = 24" and "a = 4", with the help of debug-info by ``llc -debug -march=chinx -relocation-model=pic -filetype=asm test.bc -o test.s``, where "test.bc" is generated by ``clang -target x86_64-pc-windows-msvc -c test.c -emit-llvm -o test.bc``.
+
+```cpp
+// test.bc viewed by llvm-dis test.bc -o -
+store volatile i8 24, i8* inttoptr (i64 3 to i8*), align 1 // CTRL = 24
+...
+store i8 4, i8* %2, align 1 // a = 4
+// debug-info of instruction selection from DAG
+ch = store<(volatile store 1 into `i8* inttoptr (i64 3 to i8*)`), trunc to i8> t4, Constant:i32<24>, Constant:i32<3>, undef // CTRL = 24
+...
+store<(store 1 into %ir.2), trunc to i8> t32, Constant:i32<4>, FrameIndex:i32<1>, undef:i32 // a = 4
+```
+
+Obviously, these two operations are both storage instruction generally, both marked as "store" type of these two DAG nodes. We need to find out the differences  between the description of the two nodes, and fortunately, the third operand of "CTRL = 24" is "Constant:i32<3>" while that of "a = 4" is "FrameIndex:i32<1>", cause variable "a" is located on stack using $sp. Due to this difference, we can reconsider the matching rules written in *ChinxInstrInfo.td*. Let's have a quick view,
+
+```cpp
+// --------------------------- //
+//      ChinxInstrInfo.td      //
+// --------------------------- //
+def ADDRls : ComplexPattern<iPTR, 2, "SelectADDRls", [frameindex], [SDNPWantParent]>;
+...
+class StoreM<bits<6> op, string instr_asm, PatFrag OpNode,
+	RegisterClass RC, Operand MemOpnd, bit Pseudo> :
+    FMem<op, (outs), (ins RC:$ra, MemOpnd:$addr),
+        !strconcat(instr_asm, "\t$ra, $addr"),
+        [(OpNode RC:$ra, ADDRls:$addr)], IIStore> { // ADDRls is the key
+    let isPseudo = Pseudo;
+}
+...
+multiclass StoreMemory<bits<6> op, string instr_asm, PatFrag OpNode, bit Pseudo = 0> {
+    def #NAME# : StoreM<op, instr_asm, OpNode, CPURegs, mem, Pseudo>;
+}
+...
+defm SB : StoreMemory<0x3B, "sb", truncstorei8>;
+```
+
+The storage instruction declaration "StoreM" uses an address value with its type as "ADDRls", and this type is defined as a complex pattern which would call function "SelectADDRls" to do the matching work. In this complex pattern description, the second parameter describes the number of parameters after the parameter represented function "SelectADDRls", and the following parameters describe the types of parameters that accepted by function "SelectADDRls". You have to remember that the *.td files are related to c++ source files, thus these string descriptions probably represent functions defined in other c++ source files. Let's have a look in class **ChinxDAGToDAGISel**, where defines the method "SelectADDRls",
+
+```cpp
+// -------------------------- //
+//   ChinxISelDAGToDAG.cpp    //
+// -------------------------- //
+/// ComplexPattern used on ChinxInstrInfo
+/// Used on Chinx Load/Store instructions
+bool ChinxDAGToDAGISel::SelectADDRls(SDNode *Parent, SDValue Addr, SDValue &Base, SDValue &Offset) { 
+	...
+	// if Address is FI, get the TargetFrameIndex.
+	if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Addr)) {
+        Base = CurDAG->getTargetFrameIndex(FIN->getIndex(), ValTy);
+        Offset = CurDAG->getTargetConstant(0, DL, ValTy);
+        return true; // matched by this pattern
+    }
+	...
+}
+```
+
+The first parameter "Parent" of SDNode type is the result of "[SDNPWantParent]" described in complex pattern written in *ChinxInstrInfo.td*, and the "[frameindex]" parameter describes the "Addr" parameter in "SelectADDRls" can be casted in frame structure. Thus, the frame index address expression of DAG node representing "a = 4" can be matched to "StoreM" structure, and then the "SB" instruction would be selected.
+
+Local and global variables storage operations would be matched to "StoreMemory" since there are all frame indexed by either $sp or $gp. But how about the absolute addressing？ From above, we can easily rewrite the complex pattern to make it match to the absolute addressing.
+
+```cpp
+// --------------------------- //
+//      ChinxInstrInfo.td      //
+// --------------------------- //
+def ADDRio : ComplexPattern<iPTR, 2, "SelectADDRio",
+				   [], []>; // no frameindex cause the base is not $sp, $gp, $fp
+...
+class SetPort<bits<6> op, string instr_asm, PatFrag OpNode,
+	RegisterClass RC, Operand MemOpnd, bit Pseudo> :
+	FMem<op, (outs), (ins RC:$ra, MemOpnd:$addr),
+		!strconcat(instr_asm, "\t$ra, $addr"),
+		[(OpNode RC:$ra, ADDRio:$addr)], IIStore> {
+	let isPseudo = Pseudo;
+}
+...
+multiclass SetIO<bits<6> op, string instr_asm, PatFrag OpNode, bit Pseudo = 0> {
+	def #NAME# : SetPort<op, instr_asm, OpNode, CPURegs, mem, Pseudo>;
+}
+...
+defm SET : SetIO<0x3E, "set", truncstorei8>;
+```
+
+The absolute addressing model does not need frame-index structure, and we do not need the parent DAG node, thus we dismiss the two parameters "[frameindex]" and "[SDNPWantParent]". Then declare a class "SetPort" using the new defined address matching pattern "ADDRio". Add the matching function in class **ChinxDAGToDAGISel** as below,
+
+```cpp
+// -------------------------- //
+//   ChinxISelDAGToDAG.cpp    //
+// -------------------------- //
+bool ChinxDAGToDAGISel::SelectADDRio(SDValue Addr, SDValue &Base, SDValue &Offset) {
+  EVT ValTy = Addr.getValueType();
+  SDLoc DL(Addr);
+  // if Address is FI, get the TargetFrameIndex.
+  if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Addr)) {
+    return false;
+  }
+  Base = Addr;
+  Offset = CurDAG->getTargetConstant(0, DL, ValTy);
+  return true;
+}
+```
+
+And you need to notice that the definition of "SET" must be putted before the definition of "SB", cause the backend matches instructions in order of the sequence of definitions. If you need to generate more complex and custom instructions, you could try to add custom operations in "trySelect" function in class **ChinxDAGToDAGISel** as below,
+
+```cpp
+// -------------------------- //
+//   ChinxISelDAGToDAG.cpp    //
+// -------------------------- //
+bool ChinxDAGToDAGISel::trySelect(SDNode *Node) {
+  unsigned Opcode = Node->getOpcode();
+  SDLoc DL(Node);
+  EVT NodeTy = Node->getValueType(0);
+  // Instruction Selection not handled by the auto-generated
+  // tablegen selection should be handled here.
+  switch (Opcode) {
+  case ISD::MUL:
+    // add your custom operations to handle the MUL DAG node
+    // replace the node type by Chinx::NodeType, for example, Chinx::MULT
+    // where MULT is defined in ChinxInstrInfo.td by def MULT : ...
+  default:
+    break;
+  }
+  return false;
+}
+```
+
+To summarize this part, instruction selection will be done is *ChinxDAGToDAGISel.h* and *ChinxDAGToDAGISel.cpp*, completing the work to transfer DAG nodes to machine instruction. Actually, you can do optimization before the selection and after the selection, that means you can adjust instructions like combing several instructions to one instruction after selection. The concrete steps referred to https://llvm.org/docs.
+
+The DAG nodes will be generated by class **ChinxTargetLowering** defined in *ChinxISelLowering.h* and *ChinxISelLowering.cpp*, if you do not have special needs, you can simply copy them and cut down some unnecessary code fragments from present MIPS or other CPUs.
+
+### Subtarget
+
+An instruction set can be parted to several subsets to make the back-end porting easy and efficient. Consider that ``Chinx`` is designed and implemented completely for two types, ``ChinxI`` and ``ChinxII``, and the latter one can support instruction "SET" while the former one can not. Need I generate two different compilers for them? Obviously, it is impracticable for that. Thus, the LLVM backend uses predicate to control the target instruction set by ``-mcpu=chinxI`` or ``-mcpu=chinxII``. To enable this function, we need to create predicating descriptions, and **ChinxSubtarget** is just like a version controller to manage current features of target machine.
+
+```cpp
+// --------------------- //
+//      Chinx.td         //
+// --------------------- //
+def FeatureChinxI : SubtargetFeature<"chinxI", "ChinxArchVersion", 
+	"ChinxI", "ChinxI ISA Support",[Feature_All]>;
+def FeatureChinxII : SubtargetFeature<"chinxII", "ChinxArchVersion", 
+	"ChinxII", "ChinxII ISA Support",[Feature_All, FeatureSet]>;
+def : Proc<"chinxI", [FeatureChinxI]>; // enable the command paramters "-mcpu=chinxI"
+def : Proc<"chinxII", [FeatureChinxII]>; // enable the command paramters "-mcpu=chinxII"
+// ------------------------ // 
+//     ChinxSubtarget.h     //
+// ------------------------ //
+class ChinxSubtarget : public ChinxGenSubtargetInfo {
+public:
+  enum ArchEnum { ChinxDefault, ChinxI, ChinxII };
+protected:
+  ArchEnum ChinxArchVersion;
+public: // compatible with the tablegen descriptions
+  bool hasChinxI() const { return ChinxArchVersion >= ChinxI; }
+  bool isChinxI() const { return ChinxArchVersion == ChinxI; }
+  bool hasChinxII() const { return ChinxArchVersion >= ChinxII; }
+  bool isChinxII() const { return ChinxArchVersion == ChinxII; }
+}
+```
+
+```mermaid
+graph LR
+A["ChinxTargetMachine"] --> B(("ChinxSubtargert"))
+A --> C["ChinxABIInfo"]
+B --> D["ChinxInstrInfo"] --> E["ChinxRegisterInfo"]
+B --> F["ChinxFrameLowering"]
+G["ChinxAsmPrinter"] --> B
+G --> H["ChinxMCInstLower"]
+```
+
+### Assembly
+
+The last stage of back-end porting is assembly printing, and it is easy to understand compared with the stages before. Since instruction selection and scheduling finished, this module only needs to translate each instruction as the comparable string, almost like string concatenation using substring described in *ChinxRegisterInfo.td* and *ChinxInstrInfo.td*. There are several source files we need to focus on.
+
+```cpp
+// -------------------- //
+//   ChinxAsmPrinter.h  //
+// -------------------- //
+class LLVM_LIBRARY_VISIBILITY ChinxAsmPrinter : public AsmPrinter {
+  void EmitInstruction(const MachineInstr *MI) override;
+  void EmitFunctionEntryLabel() override;
+  void EmitFunctionBodyStart() override;
+  void EmitFunctionBodyEnd() override;
+  void EmitStartOfAsmFile(Module &M) override;
+}
+```
+
+Except method *EmitInstruction*, the other virtual methods are optional to describe the function info or assembly file info. *EmitInstruction* is necessary to rewrite to print each instructions. Some operands may need special display formats, and that can be done by **ChinxInstPrinter**, for example,
+
+```cpp
+// ------------------------- //
+//      ChinxInstPrinter.h   //
+// ------------------------- //
+class ChinxInstPrinter : public MCInstPrinter {
+private:
+  void printMemOperand(const MCInst *MI, int opNum, raw_ostream &O);
+};
+// ------------------------- //
+//    ChinxInstPrinter.cpp   //
+// ------------------------- //
+void ChinxInstPrinter::printMemOperand(const MCInst *MI, int opNum, raw_ostream &O) {
+  // Load/Store memory operands -- imm($reg)
+  printOperand(MI, opNum + 1, O);
+  O << "(";
+  printOperand(MI, opNum, O);
+  O << ")";
+}
+```
+
+For address operand, method *printMemOperand* would build format like "offset($register)". Actually this is a custom method not inherited, thus you should point out  the caller. In *ChinxInstrInfo.td*,
+
+```cpp
+// Load/Store and IO Address Operand
+def mem : Operand<iPTR> {
+    let PrintMethod = "printMemOperand";
+    let MIOperandInfo = (ops MEMRegs, simm16);
+    let EncoderMethod = "getMemEncoding";
+}
+```
+
+bind the type "mem", which represents the memory address operand, and the printing method together. You should notice that "(ops MEMRegs, simm16)" points out that the first value represents the base register and the second is the offset, thus, the implementation of *printMemOperand* would print the value of "opNum + 1" first.
 
 ## Building
 
@@ -884,10 +1107,144 @@ If you use ``visual studio`` as the development tool, can easily create a **CMak
 }
 ```
 
-then generate making and building.
+then generate cmake.
 
-## Compilation
+## Compilation and Test
 We can use clang first transfer the ``*.c`` file to ``*.bc`` file, which described by LLVM IR, using command ``clang -target x86_64-pc-windows-msvc -c *.c -emit-llvm -o *.bc``. You can use ``llvm-dis`` tools to check the ``*.bc`` file by command ``llvm-dis *.bc -o -``. Finally, run command ``llc -march=chinx -relocation-model=pic -filetype=asm *.bc -o *.s`` and you will get the assembly description of ``*.cpp`` on the model machine which used the processor ``Chinx``.
+
+Suppose that your input c source file is like this,
+
+```c
+// test.c
+#define CTRL *((volatile char *)0x3)
+int main() {
+    CTRL = 4;
+    char a = 5;
+    char b = 6;
+    int  c = a * b;
+    int  d = 7;
+    int  e = d + c;
+    return 0;
+}
+```
+
+Run **Clang** to generate the IR file,
+
+```bash
+# clang -v
+# to check your target of host machine
+clang -v
+# my computer is
+# clang version 7.0.0 (tags/RELEASE_700/final)
+# Target: x86_64-pc-windows-msvc
+# then generate IR code
+clang -target x86_64-pc-windows-msvc -c test.c -emit-llvm -o test.bc
+# the *.bc is binary file, you can check the details with the help of
+# llvm-dis tool
+llvm-dis test.bc -o -
+# and the human-readable text will be displayed
+# on your screen like this
+# ...
+# ; Function Attrs: noinline nounwind optnone uwtable
+# define dso_local i32 @main() #0 {
+#   %1 = alloca i32, align 4
+#   %2 = alloca i8, align 1
+#   %3 = alloca i8, align 1
+#   %4 = alloca i32, align 4
+#   %5 = alloca i32, align 4
+#   %6 = alloca i32, align 4
+#   store i32 0, i32* %1, align 4
+#   store volatile i8 4, i8* inttoptr (i64 3 to i8*), align 1
+#   store i8 5, i8* %2, align 1
+#   store i8 6, i8* %3, align 1
+#   %7 = load i8, i8* %2, align 1
+#   %8 = sext i8 %7 to i32
+#   %9 = load i8, i8* %3, align 1
+#   %10 = sext i8 %9 to i32
+#   %11 = mul nsw i32 %8, %10
+#   store i32 %11, i32* %4, align 4
+#   store i32 7, i32* %5, align 4
+#   %12 = load i32, i32* %5, align 4
+#   %13 = load i32, i32* %4, align 4
+#   %14 = add nsw i32 %12, %13
+#   store i32 %14, i32* %6, align 4
+#   ret i32 0
+# }
+# ...
+```
+
+Before compiling the IR codes, we need check our supported target CPUs of LLVM.
+
+```bash
+llc --version
+# you would get thes infos at least
+#   LLVM version 7.0.0
+#   Registered Targets:
+#     chinx    - Chinx
+# if the registered targets contain chinx, it would be ok
+# we can use chinxI instruction set first, to see the difference
+# with chinxII. chinxII supports SET instruction while chinxI does not
+llc -march=chinx -mcpu=chinxI -relocation-model=pic -filetype=asm test.bc -o test.s
+# you would get the following assembly codes
+#         addi    $sp, $sp, -24
+#         .cfi_def_cfa_offset 24
+#         addi    $2, $zero, 0
+#         sw      $2, 20($sp)
+#         addi    $3, $zero, 3
+#         addi    $4, $zero, 4
+#         sb      $4, 0($3)
+#         addi    $3, $zero, 5
+#         sb      $3, 16($sp)
+#         addi    $3, $zero, 6
+#         sb      $3, 12($sp)
+#         lb      $3, 16($sp)
+#         lb      $4, 12($sp)
+#         mul     $3, $3, $4
+#         sw      $3, 8($sp)
+#         addi    $3, $zero, 7
+#         sw      $3, 4($sp)
+#         lw      $3, 4($sp)
+#         lw      $4, 8($sp)
+#         add     $3, $3, $4
+#         sw      $3, 0($sp)
+#         addi    $sp, $sp, 24
+#         ret     $ra
+# now we set the -mcpu as chinxII
+llc -march=chinx -mcpu=chinxII -relocation-model=pic -filetype=asm test.bc -o test.s
+#         addi    $sp, $sp, -24
+#         .cfi_def_cfa_offset 24
+#         addi    $2, $zero, 0
+#         sw      $2, 20($sp)
+#         addi    $3, $zero, 3
+#         addi    $4, $zero, 4
+#         set     $4, 0($3)
+#         addi    $3, $zero, 5
+#         sb      $3, 16($sp)
+#         addi    $3, $zero, 6
+#         sb      $3, 12($sp)
+#         lb      $3, 16($sp)
+#         lb      $4, 12($sp)
+#         mul     $3, $3, $4
+#         sw      $3, 8($sp)
+#         addi    $3, $zero, 7
+#         sw      $3, 4($sp)
+#         lw      $3, 4($sp)
+#         lw      $4, 8($sp)
+#         add     $3, $3, $4
+#         sw      $3, 0($sp)
+#         addi    $sp, $sp, 24
+#         ret     $ra
+```
+
+To understand how the DAG nodes transferred to machine instructions, you should look the DAGs generated by LLVM, like this,
+
+```bash
+llc -view-isel-dags -march=chinx -mcpu=chinxII -relocation-model=pic -filetype=asm test.bc -o test.s
+```
+
+**Graphviz** application is needed, you can download and install it here: http://www.graphviz.org/download/.
+
+The generated graph is a too large, and it can be checked here: https://github.com/ilo5u/CX-CPU/blob/master/pics/isel.pdf.
 
 # Instructions
 
