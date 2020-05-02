@@ -1,6 +1,6 @@
 Tips: If graphs can not display properly, you can try download the **Readme.md** and open it with **Typora**, https://www.typora.io/
 
-Please contact to 1047839605@qq.com or livewithoutsacrifice@outlook.com if you have some problems about this document or design of ``Chinx``.
+Please contact to 1047839605@qq.com or livewithoutsacrifice@outlook.com if you have any problems about this document or design of ``Chinx``.
 
 # Forward
 
@@ -1276,16 +1276,18 @@ The details are as the following figure showing.
 
 ![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ins.png)
 
-# Micro-Architecture Design
+# Micro-Architecture
 
-## develops
+**Tool**   ``Vivado 2018.3``
 
-**tool**   ``Vivado 2018.3``
+**Language**  ``SystemVerilog HDL``
 
-**lang**   ``Verilog HDL``
+If you find that the editor in ``Vivado`` is not convenient for use, try ``Visual Studio Code`` with extension on SystemVerilog.
 
-## design
+## Design
 
-Based on MIPS32 ISA, may choose 5-segments pipeline as the center of the design.
+We will focus on how to design and implement pipeline to build the micro-architecture of ``Chinx``. 5-segments pipeline is the most classic design, but in my model, the number of stages is not fixed. Cause pipeline is driven by register at each stage, consider that we need one cycle to fetch the next instruction, one cycle for decoding and executing arithmetic or logic operation, two cycles to access memory or IO ports, and one cycle for writing data back to register bank. "Two cycles" in above means that the frequency of generation clock in memory or IO ports is 25Mhz while 50Mhz used in each stages of pipeline, thus the pipeline needs at most two cycles to wait for the load operation or keep the data for storage active. These four stages are marked as "IF", "EMIT", "MEM" and "WB" in order. Take the ideal situation for example,
 
-# Outter Devices
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/running_example.png)
+
+![avatar](C:\Users\livew\Desktop\CX\pics\running_example.png)
