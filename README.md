@@ -1248,16 +1248,33 @@ llc -view-isel-dags -march=chinx -mcpu=chinxII -relocation-model=pic -filetype=a
 
 The generated graph is a too large, and it can be checked here: https://github.com/ilo5u/CX-CPU/blob/master/pics/isel.pdf.
 
-# Instructions
+# Instruction Set
 
-## references 
+``Chinx`` instruction set contains part of generic instructions and one custom instruction used for IO control. The memory access instructions only support aligned load and store operations. 
+
+There are three instruction structures in ``Chinx``, 32-bit register instruction for operating 3 register operands at most named "FR", 32-bit immediately instruction for operating one immediate value and 2 register operands at most named "FI", and 32-bit jumping instruction for operating only one address value named "FJ".
+
+| Type | Opcode | Operand 1  | Operand 2  | Operand 3  | Reserved |
+| ---- | ------ | ---------- | ---------- | ---------- | -------- |
+| FR   | 6 Bits | Ra(5 Bits) | Rb(5 Bits) | Rc(5 Bits) | 11 Bits  |
+
+| Type | Opcode | Operand 1  | Operand 2  | Operand 3          |
+| ---- | ------ | ---------- | ---------- | ------------------ |
+| FI   | 6 Bits | Ra(5 Bits) | Rb(5 Bits) | Immediate(16 Bits) |
+
+| Type | Opcode | Operand          |
+| ---- | ------ | ---------------- |
+| FJ   | 6 Bits | Address(26 Bits) |
+
+The details are as the following figure showing.
+
+## References
 
 [[4]MIPS@32 ISA,MIPS32 Instruction Set Quick Reference v1.01](https://www.mips.com/products/architectures/mips32-2/)
 
-## selections
+## Instruction
 
-![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ins1.png)
-![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ins2.png)
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ins.png)
 
 # Micro-Architecture Design
 
