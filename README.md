@@ -65,6 +65,122 @@ Download source codes with llvm development tools from ``http://llvm.org/release
 
 3. Download and install ``Vivado 2018.3`` and other ``Xilinx`` design tools, with ``ModelSim`` optionally, if you'd like to have a try on implementing ``Chinx`` as a complete SoC.
 
+# Instruction Set
+
+``Chinx`` instruction set contains part of generic instructions and one custom instruction used for IO control. The memory access instructions only support aligned load and store operations. 
+
+There are three instruction structures in ``Chinx``, 32-bit register instruction for operating 3 register operands at most named "FR", 32-bit immediately instruction for operating one immediate value and 2 register operands at most named "FI", and 32-bit jumping instruction for operating only one address value named "FJ".
+
+| Type | Opcode | Operand 1  | Operand 2  | Operand 3  | Reserved |
+| ---- | ------ | ---------- | ---------- | ---------- | -------- |
+| FR   | 6 Bits | Ra(5 Bits) | Rb(5 Bits) | Rc(5 Bits) | 11 Bits  |
+
+| Type | Opcode | Operand 1  | Operand 2  | Operand 3          |
+| ---- | ------ | ---------- | ---------- | ------------------ |
+| FI   | 6 Bits | Ra(5 Bits) | Rb(5 Bits) | Immediate(16 Bits) |
+
+| Type | Opcode | Operand          |
+| ---- | ------ | ---------------- |
+| FJ   | 6 Bits | Address(26 Bits) |
+
+The details are as the following figure showing.
+
+## References
+
+[[4]MIPS@32 ISA,MIPS32 Instruction Set Quick Reference v1.01](https://www.mips.com/products/architectures/mips32-2/)
+
+## Instruction
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ins.png)
+
+# Micro-Architecture
+
+**Tool**   ``Vivado 2018.3``
+
+**Language**  ``SystemVerilog HDL``
+
+If you find that the editor in ``Vivado`` is not convenient for use, try ``Visual Studio Code`` with extension on SystemVerilog.
+
+## Design
+
+We will focus on how to design and implement pipeline to build the micro-architecture of ``Chinx``. 5-segments pipeline is the most classic design, but in my model, the number of stages is not fixed. Cause pipeline is driven by register at each stage, consider that we need one cycle to fetch the next instruction, one cycle for decoding and executing arithmetic or logic operation, two cycles to access memory or IO ports and one cycle for writing data back to register bank or PC. 
+
+"Two cycles" in above means that the frequency of generation clock in memory or IO ports is 25Khz while 50Khz used in each stages of pipeline, thus the pipeline needs at most two cycles to wait for the load operation or keep the data for storage active. These four stages are marked as "IF", "EMIT", "MEM" and "WB" in order. Take the ideal situation for example,
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/running_example.png)
+
+Since the fifth instruction "LW $4, 0($0)" and the next arithmetic instruction do not have conflict, the next instruction execute parallelly with the load operation. The jump instruction "JR $0" will occupy one cycle to push the correct PC value into "ID" stage, thus the next instruction can be fetched over, but it would not be emitted and this one slot is abandoned.
+
+ ### Top Module
+
+Besides the pipeline as kernel, there needs more IO controller and outer clock for timing. 
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/top.png)
+
+1. CU
+
+   This unit would generate current PC value to fetch instruction from ROM at the posedge of system clock(50Khz). Actually, it would select the PC from EPC(recorded PC when the pipeline is stalled for one cycle), IPC(PC used for interruption service), RPC(recorded the next PC when function call or interruption occurs) or BPC(calculated by ALU when BNE, BLE, BEQ, CALL, or JUMP instruction executed) and then preserve the selected value in register to ensure that the ROM module can fetch the correct instruction.
+
+2. C0
+
+   The coprocessor unit is mainly responsible for interrupt control and PC control. When outer device sends a interrupt request, this unit must holds the request signal active till the "EMIT" stage accepts this request and responses. Besides, it would preserve stalled PC(EPC), and returned PC(RPC) at the posedge of system clock(50Khz). This module supports at most two unique interrupt request, cause it can only pre-store two unique address for interruption services. 
+
+3. Regfiles
+
+   It holds 32 32-bit registers in total, and the $0 register keeps constant zero, besides, value in $31 can be used default branch and $29 used for indexing the top of stack in memory. Only at the posedge of system clock with the write-enable signal active, the data can be written into the indexed register except $0. However, data can be read at any time, without control of clock. Due to that ``Chinx`` support tasks swapping, like interrupt service, the register bank must keep consistent before and after the swapping. Thus, there are several registers used for backup specially, like backups for $28-$31. It must be noted that the backup enable signal is conflict with write enable signal.
+
+4. ROM
+
+   The instruction rom contains 256 blocks of 32-bit, since each instruction is 32-bit. The address width is 8-bit since ``Chinx`` is just a model machine and we need not implement so many instructions to complete the tests on it. To shrink the scale of storage block can also improve the simulation performance. To fetch an instruction does not need to be driven by clock, but it would increase the time delay and lower the frequency of system clock passively.
+
+5. RAM
+
+   The data ram contains 256 blocks of 8-bit, combined by 4 chips of 64x8 Bits. Its front 4 bytes are used for IO ports. Directions of IO ports are controlled by SET instruction. This unit is driven by memory clock(25Khz), which is double divided by system clock, thus all memory access operations executed in pipeline need to handle the delay correctly.
+
+6. Pipeline
+
+   Although the pipeline contains 5 segments, this module only needs to implement one of them, "EMIT". CU is responsible for "IF" stage. RAM would handle "MEM" stage. Regfiles is responsible for "WB" stage. Thus, the instruction decoding and arithmetic or logic instruction executing will be handled in "EMIT" stage. And this stage would also control the stall and run of pipeline, as a center unit to generate all control signals sending to other units.
+
+7. CLOCK
+
+   This unit is used for timing. Every 10ms, it would overturn its output electrical level and this output signal is connected with the 0th interrupt request pin of C0.
+
+8. PORTS
+
+   Four 8-bit ports are connected with the front 4-bytes of RAM in order. Each port is bidirectional.
+
+### Pipeline Foundation
+
+#### IF
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/if.png)
+
+#### EMIT
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/emit.png)
+
+#### MEM
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/mem.png)
+
+#### WB
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/wb.png)
+
+### RAM Access Timing
+
+#### Load
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/load.png)
+
+#### Store
+
+![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/store.png)
+
+## Implementation
+
+TODO.
+
 # LLVM
 
 Since the LLVM compilation tools support the techniques that by writing compiler backends to convert the LLVM Intermediate Representation``IR`` to code for a specified machine, this project would follow its [Document: 'Writing an LLVM Backend'](https://llvm.org/docs/WritingAnLLVMBackend.html#introduction) to convert the c language(subset of it) to assembly code fitted with Chinx.
@@ -1247,47 +1363,3 @@ llc -view-isel-dags -march=chinx -mcpu=chinxII -relocation-model=pic -filetype=a
 **Graphviz** application is needed, you can download and install it here: http://www.graphviz.org/download/.
 
 The generated graph is a too large, and it can be checked here: https://github.com/ilo5u/CX-CPU/blob/master/pics/isel.pdf.
-
-# Instruction Set
-
-``Chinx`` instruction set contains part of generic instructions and one custom instruction used for IO control. The memory access instructions only support aligned load and store operations. 
-
-There are three instruction structures in ``Chinx``, 32-bit register instruction for operating 3 register operands at most named "FR", 32-bit immediately instruction for operating one immediate value and 2 register operands at most named "FI", and 32-bit jumping instruction for operating only one address value named "FJ".
-
-| Type | Opcode | Operand 1  | Operand 2  | Operand 3  | Reserved |
-| ---- | ------ | ---------- | ---------- | ---------- | -------- |
-| FR   | 6 Bits | Ra(5 Bits) | Rb(5 Bits) | Rc(5 Bits) | 11 Bits  |
-
-| Type | Opcode | Operand 1  | Operand 2  | Operand 3          |
-| ---- | ------ | ---------- | ---------- | ------------------ |
-| FI   | 6 Bits | Ra(5 Bits) | Rb(5 Bits) | Immediate(16 Bits) |
-
-| Type | Opcode | Operand          |
-| ---- | ------ | ---------------- |
-| FJ   | 6 Bits | Address(26 Bits) |
-
-The details are as the following figure showing.
-
-## References
-
-[[4]MIPS@32 ISA,MIPS32 Instruction Set Quick Reference v1.01](https://www.mips.com/products/architectures/mips32-2/)
-
-## Instruction
-
-![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/ins.png)
-
-# Micro-Architecture
-
-**Tool**   ``Vivado 2018.3``
-
-**Language**  ``SystemVerilog HDL``
-
-If you find that the editor in ``Vivado`` is not convenient for use, try ``Visual Studio Code`` with extension on SystemVerilog.
-
-## Design
-
-We will focus on how to design and implement pipeline to build the micro-architecture of ``Chinx``. 5-segments pipeline is the most classic design, but in my model, the number of stages is not fixed. Cause pipeline is driven by register at each stage, consider that we need one cycle to fetch the next instruction, one cycle for decoding and executing arithmetic or logic operation, two cycles to access memory or IO ports, and one cycle for writing data back to register bank. "Two cycles" in above means that the frequency of generation clock in memory or IO ports is 25Mhz while 50Mhz used in each stages of pipeline, thus the pipeline needs at most two cycles to wait for the load operation or keep the data for storage active. These four stages are marked as "IF", "EMIT", "MEM" and "WB" in order. Take the ideal situation for example,
-
-![avatar](https://github.com/ilo5u/CX-CPU/blob/master/pics/running_example.png)
-
-![avatar](C:\Users\livew\Desktop\CX\pics\running_example.png)
