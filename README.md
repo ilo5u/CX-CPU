@@ -491,53 +491,34 @@ Let's have a overlook on the structure of the implementation coding files.
 
 ```cpp
 --> lib/Target/Chinx/
-    --- Chinx.h
-    --- Chinx.td
+    --- Chinx.h --- Chinx.td
     --- ChinxAsmPrinter.cpp
     --- ChinxCallingConv.td
-    --- ChinxFrameLowering.cpp
-    --- ChinxFrameLowering.h
-    --- ChinxISelDAGToDAG.cpp
-    --- ChinxISelLowring.cpp
-    --- ChinxISelLowering.h
+    --- ChinxFrameLowering.cpp ChinxFrameLowering.h
+    --- ChinxISelDAGToDAG.cpp ChinxISelDAGToDAG.h
+    --- ChinxISelLowring.cpp ChinxISelLowering.h
     --- ChinxInstrFormats.td
-    --- ChinxInstrInfo.cpp
-    --- ChinxInstrInfo.h
-    --- ChinxInstrInfo.td
-    --- ChinxMCInstLower.cpp
-    --- ChinxMCInstLower.h
-    --- ChinxMachineFunctionInfo.cpp
-    --- ChinxMachineFunctionInfo.h
-    --- ChinxRegisterInfo.cpp
-    --- ChinxRegisterInfo.h
-    --- ChinxSubtarget.cpp
-    --- ChinxSubtarget.h
-    --- ChinxTargetMachine.cpp
-    --- ChinxTargetMachine.h
-    --- ChinxTargetObjectFile.cpp
-    --- ChinxTargetObjectFile.h
-    --- CMakeLists.txt
-    --- LLVMBuild.txt
+    --- ChinxInstrInfo.cpp ChinxInstrInfo.h ChinxInstrInfo.td
+    --- ChinxMCInstLower.cpp ChinxMCInstLower.h
+    --- ChinxMachineFunctionInfo.cpp ChinxMachineFunctionInfo.h
+    --- ChinxRegisterInfo.cpp ChinxRegisterInfo.h ChinxRegisterInfo.td
+    --- ChinxSubtarget.cpp ChinxSubtarget.h
+    --- ChinxTargetMachine.cpp ChinxTargetMachine.h
+    --- ChinxTargetObjectFile.cpp  ChinxTargetObjectFile.h
+    --- CMakeLists.txt LLVMBuild.txt
 ------> InstPrinter/
-        --- ChinxInstPrinter.cpp
-        --- ChinxInstPrinter.h
-        --- CMakeLists.txt
-        --- LLVMBuild.txt
+        --- ChinxInstPrinter.cpp ChinxInstPrinter.h
+        --- CMakeLists.txt LLVMBuild.txt
     --- LLVMBuild.txt
 ------> MCTargetDesc/
-        --- ChinxABIInfo.cpp
-    	--- ChinxABIInfo.h
+        --- ChinxABIInfo.cpp ChinxABIInfo.h
     	--- ChinxBaseInfo.h
-        --- ChinxMCAsmInfo.cpp
-        --- ChinxMCAsmInfo.h
-        --- ChinxMCTargetDesc.cpp
-        --- ChinxMCTargerDesc.h
-        --- CMakeLists.txt
-        --- LLVMBuild.txt
+        --- ChinxMCAsmInfo.cpp ChinxMCAsmInfo.h
+        --- ChinxMCTargetDesc.cpp ChinxMCTargerDesc.h
+        --- CMakeLists.txt LLVMBuild.txt
 ------> TargetInfo/
         --- ChinxTargetInfo.cpp
-        --- CMakeLists.txt
-        --- LLVMBuild.txt
+        --- CMakeLists.txt LLVMBuild.txt
 ```
 
 ### ChinxTargetMachine
