@@ -56,7 +56,7 @@ BitVector ChinxRegisterInfo::
 getReservedRegs(const MachineFunction &MF) const {
   static const MCPhysReg ReservedCPURegs[] = {
     Chinx::ZERO, Chinx::AT, Chinx::K0, Chinx::K1, Chinx::SP,
-    Chinx::RA, Chinx::PC
+    Chinx::RA
   };
 
   BitVector Reserved(getNumRegs());

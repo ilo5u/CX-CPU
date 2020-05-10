@@ -93,53 +93,11 @@ void ChinxInstrInfo::adjustStackPtr(unsigned SP, int64_t Amount,
 	DebugLoc DL = I != MBB.end() ? I->getDebugLoc() : DebugLoc();
 	unsigned ADD = Chinx::ADD; // add ra,rb,rc
 	unsigned ADDI = Chinx::ADDI; // addi ra,rb,imm16
-
-	if (isInt<16>(Amount)) {
-		// addiu sp, sp, amount
-		BuildMI(MBB, I, DL, get(ADDI), SP).addReg(SP).addImm(Amount);
-	}
-	else { // Expand immediate that doesn't fit in 16-bit.
-		unsigned Reg = loadImmediate(Amount, MBB, I, DL, nullptr);
-		BuildMI(MBB, I, DL, get(ADD), SP).addReg(SP).addReg(Reg, RegState::Kill);
-	}
-}
-
-/// This function generates the sequence of instructions needed to get the
-/// result of adding register REG and immediate IMM.
-unsigned ChinxInstrInfo::loadImmediate(int64_t Imm,
-	MachineBasicBlock &MBB, MachineBasicBlock::iterator II,
-	const DebugLoc &DL, unsigned *NewImm) const {
-	ChinxAnalyzeImmediate AnalyzeImm;
-	unsigned Size = 32;
-	unsigned LUI = Chinx::LUI;
-	unsigned ZEROReg = Chinx::ZERO;
-	unsigned ATReg = Chinx::AT;
-	bool LastInstrIsADDI = NewImm;
-
-	const ChinxAnalyzeImmediate::InstSeq &Seq =
-		AnalyzeImm.Analyze(Imm, Size, LastInstrIsADDI);
-	ChinxAnalyzeImmediate::InstSeq::const_iterator Inst = Seq.begin();
-
-	assert(Seq.size() && (!LastInstrIsADDI || (Seq.size() > 1)));
-
-	// The first instruction can be a LUI, which is different from other
-	// instructions (ADDI, ORI and SHL) in that it does not have a register
-	// operand.
-	if (Inst->Opc == LUI)
-		BuildMI(MBB, II, DL, get(LUI), ATReg).addImm(SignExtend64<16>(Inst->ImmOpnd));
-	else
-		BuildMI(MBB, II, DL, get(Inst->Opc), ATReg).addReg(ZEROReg)
-		.addImm(SignExtend64<16>(Inst->ImmOpnd));
-
-	// Build the remaining instructions in Seq.
-	for (++Inst; Inst != Seq.end() - LastInstrIsADDI; ++Inst)
-		BuildMI(MBB, II, DL, get(Inst->Opc), ATReg).addReg(ATReg)
-		.addImm(SignExtend64<16>(Inst->ImmOpnd));
-
-	if (LastInstrIsADDI)
-		*NewImm = Inst->ImmOpnd;
-
-	return ATReg;
+	// Suppose that the stack size would only
+	// arrange from -2^15 to 2^15 - 1.
+    assert(isInt<16>(Amount));
+	// addiu sp, sp, amount
+	BuildMI(MBB, I, DL, get(ADDI), SP).addReg(SP).addImm(Amount);
 }
 
 void ChinxInstrInfo::expandRetRA(MachineBasicBlock &MBB,

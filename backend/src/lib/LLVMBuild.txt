@@ -20,6 +20,7 @@
 [common]
 subdirectories =
  AMDGPU
+ ARC
  ARM
  AArch64
  AVR
@@ -29,7 +30,10 @@ subdirectories =
  MSP430
  NVPTX
  Mips
+ Chinx
+ Nios2
  PowerPC
+ RISCV
  Sparc
  SystemZ
  WebAssembly

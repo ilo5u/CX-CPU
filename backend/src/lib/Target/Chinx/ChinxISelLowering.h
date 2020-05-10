@@ -35,27 +35,15 @@ namespace llvm {
       // Tail call
       TailCall,
       // Get the Higher 16 bits from a 32-bit immediate
-      // No relation with Chinx Hi register
       Hi,
       // Get the Lower 16 bits from a 32-bit immediate
-      // No relation with Chinx Lo register
       Lo,
       // Handle gp_rel (small data/bss sections) relocation.
       GPRel,
-      // Thread Pointer
-      ThreadPointer,
       // Return
       Ret,
       // Software Exception Return.
-      EH_RETURN,
-      // Node used to extract integer from accumulator.
-      MFHI,
-      MFLO,
-      // Mul nodes.
-      Mul,
-      Wrapper,
-      DynAlloc,
-      Sync
+      EH_RETURN
     };
   }
 

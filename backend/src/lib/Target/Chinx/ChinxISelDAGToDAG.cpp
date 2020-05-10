@@ -71,14 +71,24 @@ bool ChinxDAGToDAGISel::SelectADDRls(SDNode *Parent, SDValue Addr, SDValue &Base
         return false;
     }
   }
-
   // if Address is FI, get the TargetFrameIndex.
   if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Addr)) {
     Base = CurDAG->getTargetFrameIndex(FIN->getIndex(), ValTy);
     Offset = CurDAG->getTargetConstant(0, DL, ValTy);
     return true;
   }
-
+  // if Address is Constant, get the ConstantValue
+  if (ConstantSDNode *CSD = dyn_cast<ConstantSDNode>(Addr)) {
+    // if access IO data ports, unmatched
+    if (CSD->getConstantIntValue()->getZExtValue() > 0x7) {
+      return false;
+    }
+    // if access IO data ports, matched
+    Base = Addr;
+	// map 4-7 to 0-3
+    Offset = CurDAG->getTargetConstant(-4, DL, ValTy);
+    return true;
+  }
   Base = Addr;
   Offset = CurDAG->getTargetConstant(0, DL, ValTy);
   return true;
@@ -88,12 +98,18 @@ bool ChinxDAGToDAGISel::SelectADDRio(SDValue Addr, SDValue &Base,
                                      SDValue &Offset) {
   EVT ValTy = Addr.getValueType();
   SDLoc DL(Addr);
-
   // if Address is FI, get the TargetFrameIndex.
   if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Addr)) {
     return false;
   }
-
+  // if Address is Constant, get the ConstantValue
+  if (ConstantSDNode *CSD = dyn_cast<ConstantSDNode>(Addr)) {
+    // if access IO data ports, unmatched
+     if (CSD->getConstantIntValue()->getZExtValue() > 0x3) {
+      return false;
+    }
+  }
+  // access IO control ports
   Base = Addr;
   Offset = CurDAG->getTargetConstant(0, DL, ValTy);
   return true;
@@ -103,10 +119,6 @@ bool ChinxDAGToDAGISel::SelectADDRio(SDValue Addr, SDValue &Base,
 /// expanded, promoted and normal instructions
 void ChinxDAGToDAGISel::Select(SDNode *Node) {
   unsigned Opcode = Node->getOpcode();
-
-  // Dump information about the Node being selected
-  // DEBUG(errs() << "Selecting: "; Node->dump(CurDAG); errs() << "\n");
-
   // If we have a custom node, we already have selected!
   if (Node->isMachineOpcode()) {
     // DEBUG(errs() << "== "; Node->dump(CurDAG); errs() << "\n");

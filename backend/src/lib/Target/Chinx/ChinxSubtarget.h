@@ -30,7 +30,6 @@
 
 namespace llvm {
 class StringRef;
-
 class ChinxTargetMachine;
 
 class ChinxSubtarget : public ChinxGenSubtargetInfo {

@@ -28,10 +28,8 @@ using namespace llvm;
 
 extern "C" void LLVMInitializeChinxTarget() {
     // Register the target.
-    //RegisterTargetMachine<ChinxebTargetMachine>
-    //        X(TheChinxTarget);
-    RegisterTargetMachine<ChinxelTargetMachine>
-            Y(getTheChinxTarget());
+    RegisterTargetMachine<ChinxTargetMachine>
+            X(getTheChinxTarget());
 }
 
 static std::string computeDataLayout(const Triple &TT, StringRef CPU,
@@ -81,39 +79,17 @@ static CodeModel::Model getEffectiveCodeModel(Optional<CodeModel::Model> CM) {
 ChinxTargetMachine::ChinxTargetMachine(const Target &T, const Triple &TT, StringRef CPU,
                     StringRef FS, const TargetOptions &Options,
                     Optional<Reloc::Model> RM, Optional<CodeModel::Model> CM,
-                    CodeGenOpt::Level OL, bool JIT, bool isLittle)
-    : LLVMTargetMachine(T, computeDataLayout(TT, CPU, Options, isLittle), TT,
+                    CodeGenOpt::Level OL, bool JIT)
+    : LLVMTargetMachine(T, computeDataLayout(TT, CPU, Options, true), TT,
                         CPU, FS, Options, getEffectiveRelocModel(JIT, RM),
                         getEffectiveCodeModel(CM), OL),
-      isLittle(isLittle),
       TLOF(make_unique<ChinxTargetObjectFile>()),
       ABI(ChinxABIInfo::computeTargetABI()),
-      Subtarget(TT, CPU, FS, isLittle, *this) {
+      Subtarget(TT, CPU, FS, true, *this) {
     initAsmInfo();
 }
 
 ChinxTargetMachine::~ChinxTargetMachine() {}
-
-void ChinxebTargetMachine::anchor() {}
-
-ChinxebTargetMachine::ChinxebTargetMachine(const Target &T, const Triple &TT,
-                                           StringRef CPU, StringRef FS,
-                                           const TargetOptions &Options,
-                                           Optional<Reloc::Model> RM,
-                                           Optional<CodeModel::Model> CM,
-                                           CodeGenOpt::Level OL, bool JIT)
-    : ChinxTargetMachine(T, TT, CPU, FS, Options, RM, CM, OL, JIT, true) {}
-
-void ChinxelTargetMachine::anchor() {}
-
-ChinxelTargetMachine::ChinxelTargetMachine(const Target &T, const Triple &TT,
-                                           StringRef CPU, StringRef FS,
-                                           const TargetOptions &Options,
-                                           Optional<Reloc::Model> RM,
-                                           Optional<CodeModel::Model> CM,
-                                           CodeGenOpt::Level OL, bool JIT)
-    : ChinxTargetMachine(T, TT, CPU, FS, Options, RM, CM, OL, JIT, true) {}
-
 
 const ChinxSubtarget *
 ChinxTargetMachine::getSubtargetImpl(const Function &F) const {
@@ -133,7 +109,7 @@ ChinxTargetMachine::getSubtargetImpl(const Function &F) const {
     // creation will depend on the TM and the code generation flags on the
     // function that reside in TargetOptions.
     resetTargetOptions(F);
-    I = llvm::make_unique<ChinxSubtarget>(TargetTriple, CPU, FS, isLittle,
+    I = llvm::make_unique<ChinxSubtarget>(TargetTriple, CPU, FS, true,
                                           *this);
   }
   return I.get();

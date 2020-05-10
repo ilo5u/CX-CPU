@@ -15,7 +15,6 @@
 #define LLVM_LIB_TARGET_CHINX_CHINXINSTRINFO_H
 
 #include "Chinx.h"
-#include "ChinxAnalyzeImmediate.h"
 #include "ChinxRegisterInfo.h"
 
 #include "llvm/CodeGen/MachineInstrBuilder.h"
@@ -81,12 +80,6 @@ public:
   void adjustStackPtr(unsigned SP, int64_t Amount,
     MachineBasicBlock &MBB,
     MachineBasicBlock::iterator I) const;
-
-  /// Emit a series of instructions to load an immediate. If NewImm is a
-  /// non-NULL parameter, the last instruction is not emitted, but instead
-  /// its immediate operand is returned in NewImm.
-  unsigned loadImmediate(int64_t Imm, MachineBasicBlock &MBB,
-	  MachineBasicBlock::iterator II, const DebugLoc &DL, unsigned *NewImm) const;
 
 protected:
   MachineMemOperand *GetMemOperand(MachineBasicBlock &MBB, int FI,

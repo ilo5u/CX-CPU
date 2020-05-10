@@ -136,9 +136,9 @@ let Predicates = [Fe_1] in {
 // Arithmetic and logical instructions with 3 register operands.
 class ArithLogicR<bits<6> op, string instr_asm, SDNode OpNode,
 	InstrItinClass itin, RegisterClass RC, bit isComm = 0> :
-	FR<op, (outs GPROut:$ra), (ins RC:$rb, RC:$rc),
+	FR<op, (outs WRERegs:$ra), (ins RC:$rb, RC:$rc),
 		!strconcat(instr_asm, "\t$ra, $rb, $rc"),
-		[(set GPROut:$ra, (OpNode RC:$rb, RC:$rc))], itin> {
+		[(set WRERegs:$ra, (OpNode RC:$rb, RC:$rc))], itin> {
 	let reserved = 0;
 	let isCommutable = isComm; // e.g. add rb rc =  add rc rb
 	let isReMaterializable = 1;
@@ -147,9 +147,9 @@ class ArithLogicR<bits<6> op, string instr_asm, SDNode OpNode,
 // Arithmetic and logical instructions with 2 register operands and 1 immediate operand.
 class ArithLogicI<bits<6> op, string instr_asm, SDNode OpNode, 
 	Operand Od, PatLeaf imm_type, RegisterClass RC> :
-	FI<op, (outs GPROut:$ra), (ins RC:$rb, Od:$imm16),
+	FI<op, (outs WRERegs:$ra), (ins RC:$rb, Od:$imm16),
         !strconcat(instr_asm, "\t$ra, $rb, $imm16"),
-        [(set GPROut:$ra, (OpNode RC:$rb, imm_type:$imm16))], IIAlu> {
+        [(set WRERegs:$ra, (OpNode RC:$rb, imm_type:$imm16))], IIAlu> {
 	let isReMaterializable = 1;
 }
 // Feature_1
@@ -159,9 +159,9 @@ let Predicates = [Fe_2] in {
 // Shifts
 class ShiftI<bits<6> op, string instr_asm, SDNode OpNode,
 	PatFrag PF, Operand ImmOpnd, RegisterClass RC> :
-	FI<op, (outs GPROut:$ra), (ins RC:$rb, ImmOpnd:$imm16),
+	FI<op, (outs WRERegs:$ra), (ins RC:$rb, ImmOpnd:$imm16),
 		!strconcat(instr_asm, "\t$ra, $rb, $imm16"),
-		[(set GPROut:$ra, (OpNode RC:$rb, PF:$imm16))], IIAlu> {
+		[(set WRERegs:$ra, (OpNode RC:$rb, PF:$imm16))], IIAlu> {
 }
 
 // 32-bit shift instructions. e.g. sll $ra, $rb, imm5
@@ -210,7 +210,7 @@ class SetPort<bits<6> op, string instr_asm, PatFrag OpNode,
 	let isPseudo = Pseudo;
 }
 multiclass LoadMemory<bits<6> op, string instr_asm, PatFrag OpNode, bit Pseudo = 0> {
-    def #NAME# : LoadM<op, instr_asm, OpNode, GPROut, mem, Pseudo>;
+    def #NAME# : LoadM<op, instr_asm, OpNode, WRERegs, mem, Pseudo>;
 }
 multiclass StoreMemory<bits<6> op, string instr_asm, PatFrag OpNode, bit Pseudo = 0> {
     def #NAME# : StoreM<op, instr_asm, OpNode, CPURegs, mem, Pseudo>;
@@ -275,7 +275,7 @@ def OR : ArithLogicR<0x06, "or", or, IIAlu, CPURegs>;
 def XOR : ArithLogicR<0x07, "xor", xor, IIAlu, CPURegs>;
 
 def SUBI : ArithLogicI<0x0A, "subi", sub, simm16, immSExt16, CPURegs>;
-def LUI : LoadUpperI<0x0F, "lui", GPROut, uimm16>;
+def LUI : LoadUpperI<0x0F, "lui", WRERegs, uimm16>;
 def ORI : ArithLogicI<0x11, "ori", or, uimm16, immUExt16, CPURegs>;
 def ANDI : ArithLogicI<0x12, "andi", and, uimm16, immUExt16, CPURegs>;
 }
@@ -292,7 +292,7 @@ def SRA : ShiftImm32<0x15, "sra", sra>;
 def SRL : ShiftImm32<0x16, "srl", srl>;
 }
 let Predicates = [Fe_1] in {
-def JR : JumpRegister<0x22, "jr", GPROut>;
+def JR : JumpRegister<0x22, "jr", WRERegs>;
 let isReturn = 1, isTerminator = 1, hasDelaySlot = 1, isBarrier = 1, hasCtrlDep = 1 in
 def RetRA : ChinxPseudo<(outs), (ins), "", [(ChinxRet)]>;
 
@@ -304,7 +304,7 @@ let Predicates = [Fe_1] in {
 // Instruction aliases
 //===----------------------------------------------------------------------===//
 def : ChinxInstAlias<"mov $dst, $src", 
-    (ADD GPROut:$dst, GPROut:$src,ZERO), 1>;
+    (ADD WRERegs:$dst, WRERegs:$src,ZERO), 1>;
 }
 
 //===----------------------------------------------------------------------===//

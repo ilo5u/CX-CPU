@@ -67,10 +67,6 @@ const char *ChinxTargetLowering::getTargetNodeName(unsigned Opcode) const {
   case ChinxISD::GPRel:             return "ChinxISD::GPRel";
   case ChinxISD::Ret:               return "ChinxISD::Ret";
   case ChinxISD::EH_RETURN:         return "ChinxISD::EH_RETURN";
-  case ChinxISD::MFHI:              return "ChinxISD::MFHI";
-  case ChinxISD::MFLO:              return "ChinxISD::MFLO";
-  case ChinxISD::Mul:               return "ChinxISD::Mul";
-  case ChinxISD::Wrapper:           return "ChinxISD::Wrapper";
   }
   return nullptr;
 }

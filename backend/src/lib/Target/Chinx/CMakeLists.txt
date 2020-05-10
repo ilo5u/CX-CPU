@@ -25,7 +25,6 @@ add_llvm_target(ChinxCodeGen
         ChinxTargetObjectFile.cpp
         ChinxTargetMachine.cpp
         ChinxISelDAGToDAG.cpp
-        ChinxAnalyzeImmediate.cpp
         )
 
 add_subdirectory(InstPrinter)
