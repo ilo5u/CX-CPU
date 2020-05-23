@@ -25,15 +25,18 @@ module chinx_tick(
     input wire rst,
     output reg ireq
 );
+// ticker would turn over signal of the 'ireq' pin
+// every 20ms
+localparam period = 50000;
 reg [31:0] div;
 always_ff @(posedge clk)
 if (rst == 1'b1) begin
-    div <= 32'd0;
+    div <= 0;
     ireq <= 1'b0;
-end else if (div < 10000) begin
+end else if (div < period) begin
     div <= div + 1;
 end else begin
-    div <= 32'd0;
+    div <= 0;
     ireq <= ~ireq;
 end
 endmodule

@@ -10,7 +10,7 @@
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+// A simple sample to test CHINX cpu.
 // Dependencies: 
 // 
 // Revision:
@@ -30,27 +30,30 @@ wire [7:0] io1 = {4'bz, led};
 wire [7:0] io2;
 wire [7:0] io3;
 
-reg [31:0] lower;
-reg clk50khz;
+// underclock 50MHz --> 500KHz
+localparam splitter_low = 50;
+localparam splitter_high = 100;
+reg [7:0]  splitter_100s;
+reg clk500khz;
 initial begin
-    lower = 0;
-    clk50khz = 1'b0;
+    splitter_100s = 0;
+    clk500khz = 1'b0;
 end
 always_ff @(posedge clk) begin
-    if (lower < 32'd500) begin
-        lower <= lower + 1;
-        clk50khz <= 1'b0;
-    end else if (lower >= 32'd500 && lower < 32'd1000) begin
-        lower <= lower + 1;
-        clk50khz <= 1'b1;
+    if (splitter_100s < splitter_low) begin
+        splitter_100s <= splitter_100s + 1;
+        clk500khz <= 1'b0;
+    end else if (splitter_100s >= splitter_low && splitter_100s < splitter_high) begin
+        splitter_100s <= splitter_100s + 1;
+        clk500khz <= 1'b1;
     end else begin
-        lower <= 0;
-        clk50khz <= 1'b0;
+        splitter_100s <= 0;
+        clk500khz <= 1'b0;
     end
 end
-
+// frequency of system clock is 500KHz
 chinx_pipeline pipeline(
-    .clk(clk50khz),
+    .clk(clk500khz),
     .rst(~rst),
     .io0(io0),
     .io1(io1),

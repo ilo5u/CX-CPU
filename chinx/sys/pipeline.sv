@@ -21,7 +21,7 @@
 `include "defines.vh"
 
 module chinx_pipeline(
-    input wire clk, // 50mhz
+    input wire clk, // 5MHz
     input wire rst, // active high
     // io ports
     inout [7:0] io0,
@@ -29,15 +29,6 @@ module chinx_pipeline(
     inout [7:0] io2,
     inout [7:0] io3
 );
-
-// wire sysclk;
-// wire memclk;
-// wire tikclk;
-// clock_gen cgen(
-//     .clk_in1(clk),
-//     .clk_out1(sysclk),
-//     .clk_out2(memclk)
-// );
  
  wire sysclk;
  wire memclk;
@@ -46,8 +37,8 @@ module chinx_pipeline(
     .clk_0(sysclk),
     .clk_1(memclk)
  );
- wire tikclk = sysclk;
 
+wire tikclk = sysclk;
 wire ir0_w;
 chinx_tick tick(
     .clk(tikclk),
@@ -86,7 +77,7 @@ chinx_cop cop(
 );
 
 wire [`BRANCH_SRC_WIDTH - 1:0] bsrc_w;
-wire [`ADDR_WIDTH - 1:0] baddr_w;
+wire [`ADDR_WIDTH - 1:0] bpc_w;
 wire [`INSTR_WIDTH - 1:0] instr_w;
 chinx_stage1 stage1(
     .clk(sysclk),
@@ -95,39 +86,39 @@ chinx_stage1 stage1(
     .epc_i(epco_w),
     .ipc_i(ipco_w),
     .rpc_i(rpco_w),
-    .baddr_i(baddr_w),
+    .baddr_i(bpc_w),
     .pc_o(pc_w),
     .instr_o(instr_w)
 );
 
-wire memce_w;
-wire [`MEM_OPND_WIDTH - 1:0] memod_w;
+wire we_w;
+wire [`MEM_OPND_WIDTH - 1:0] opnd_w;
 wire [`DATA_WIDTH - 1:0] load_w;
-wire [`DATA_WIDTH - 1:0] store_w;
-wire [`ADDR_WIDTH - 1:0] lsaddr_w;
+wire [`DATA_WIDTH - 1:0] data_w;
+wire [`ADDR_WIDTH - 1:0] addr_w;
 chinx_stage2 stage2(
     .clk(sysclk),
     .rst(rst),
     .pc_i(pc_w),
     .instr_i(instr_w),
     .ireq_i(intrf_w),
-    .memce_o(memce_w),
-    .memod_o(memod_w),
+    .we_o(we_w),
+    .opnd_o(opnd_w),
     .load_i(load_w),
-    .addr_o(lsaddr_w),
-    .store_o(store_w),
+    .addr_o(addr_w),
+    .data_o(data_w),
     .bsrc_o(bsrc_w),
     .irep_o(irep_w),
-    .baddr_o(baddr_w)
+    .bpc_o(bpc_w)
 );
 
 chinx_mem32 mem32(
     .clk(memclk),
     .rst(rst),
-    .ce(memce_w),
-    .opnd(memod_w),
-    .addr_i(lsaddr_w),
-    .data_i(store_w),
+    .ce(we_w),
+    .opnd(opnd_w),
+    .addr_i(addr_w),
+    .data_i(data_w),
     .iodata0(io0),
     .iodata1(io1),
     .iodata2(io2),

@@ -54,8 +54,7 @@ module chinx_emit(
     output reg irep_o, // active when start the interruption program
     // Load/Store cache
     output reg addrfix_o, // addr = addr + 4 cause 'POP' operation
-    output reg stasrc_o,
-    output reg stdsrc_o
+    output reg cache_o
 );
 
 // Arith and Logic operations (ALO)
@@ -143,7 +142,6 @@ always_ff @(posedge clk) begin
         `LEV_H:
         case (ls_period_r)
         `LEV_H: begin
-        memod_o <= `MEM_OPND_WORD;
         case (ls_op_r)
         `MEM_LOAD: begin
             // regfiles
@@ -151,7 +149,6 @@ always_ff @(posedge clk) begin
             alures_o  <= `ALU_RES_PAS;
             wbe_o   <= `LEV_H;
             waddr_o <= conflict_r;
-            memce_o <= `LEV_L;
             // internals
             ls_busy_r <= `LEV_L;
             conflict_r <= `REG_ADDR_WIDTH'd0;
@@ -162,21 +159,20 @@ always_ff @(posedge clk) begin
             alures_o  <= `ALU_RES_PAS;
             wbe_o   <= `LEV_H;
             waddr_o <= conflict_r;
-            memce_o <= `LEV_L;
             // internals
             ls_busy_r <= `LEV_L;
             conflict_r <= `REG_ADDR_WIDTH'd0;
         end
         default: begin
             wbe_o <= `LEV_L;
-            memce_o <= `LEV_L;
             // internals
             ls_busy_r <= `LEV_L;
             conflict_r <= `REG_ADDR_WIDTH'd0;
         end
         endcase
         end
-        default: begin
+        default: begin // period == LOW
+        cache_o <= `LEV_L;
         case (ls_op_r)
         `MEM_PUSH: begin
             // regfiles
@@ -222,7 +218,6 @@ always_ff @(posedge clk) begin
         `LEV_H:
         case (ls_period_r)
         `LEV_H: begin // memory access operation is finished
-            memod_o <= `MEM_OPND_WORD;
             case (ls_op_r)
             `MEM_LOAD: begin
                 // regfiles
@@ -255,6 +250,7 @@ always_ff @(posedge clk) begin
             conflict_r <= `REG_ADDR_WIDTH'd0;
         end
         default: begin // memory access operation is running
+            cache_o <= `LEV_L;
             case (ls_op_r)
             `MEM_POP: begin // SP = SP + 4
                 // regfiles
@@ -283,8 +279,6 @@ always_ff @(posedge clk) begin
                 wbe_o <= `LEV_L;
             end
             endcase
-            stasrc_o <= `STA_SRC_CACHE;
-            stdsrc_o <= `STD_SRC_CACHE;
             // branch
             bsrc_o <= `BRANCH_SRC_EPC;
             // internals
@@ -295,8 +289,6 @@ always_ff @(posedge clk) begin
             // regfiles
             wbe_o <= `LEV_L;
             irep_o <= `LEV_H;
-            // memory
-            memce_o <= `LEV_L;
             // branch
             bsrc_o <= `BRANCH_SRC_IPC;
             // internals
@@ -309,8 +301,6 @@ always_ff @(posedge clk) begin
         `LEV_H:
         case (ls_period_r)
         `LEV_H: begin // memory access finished
-            memce_o <= `LEV_L;
-            memod_o <= `MEM_OPND_WORD;
             case (ls_op_r)
             `MEM_LOAD: begin // need to write back
                 // regfiles
@@ -442,10 +432,12 @@ always_ff @(posedge clk) begin
         if ((conflict_r != `REG_ZERO)
             && (ra_w == conflict_r || rb_w == conflict_r || rc_w == conflict_r)) begin
             // WAW and RAW
-            wbe_o <= `LEV_L;
+            wbe_o   <= `LEV_L;
+            cache_o <= `LEV_L;
             // branch
             bsrc_o <= `BRANCH_SRC_EPC;
         end else begin 
+            cache_o <= `LEV_L;
             case (ls_op_r)
             `MEM_POP: begin // SP = SP + 4
                 // regfiles
@@ -572,8 +564,6 @@ always_ff @(posedge clk) begin
                 bsrc_o <= `BRANCH_SRC_NOOP;
             end
             endcase
-            stasrc_o <= `STA_SRC_CACHE;
-            stdsrc_o <= `STD_SRC_CACHE;
         end
         endcase
         default: begin // no memory access operations
@@ -672,8 +662,6 @@ always_ff @(posedge clk) begin
                 wbe_o <= `LEV_L;
             end
             endcase // build the ALU
-            // memory
-            memce_o <= `LEV_L;
             // branch
             bsrc_o <= `BRANCH_SRC_NOOP;
             // internals
@@ -686,7 +674,6 @@ always_ff @(posedge clk) begin
         `LEV_H:
         case (ls_period_r)
         `LEV_H: begin // memory access finished
-            memod_o <= `MEM_OPND_WORD;
             case (ls_op_r)
             `MEM_LOAD: begin
                 // regfiles
@@ -789,12 +776,11 @@ always_ff @(posedge clk) begin
                 endcase
             end
             endcase
-            // memory
-            memce_o <= `LEV_L;
             // internals
             ls_busy_r <= `LEV_L;
         end
         default: begin // memory access running
+            cache_o <= `LEV_L;
             case (ls_op_r)
             `MEM_POP: begin
                 // regfiles
@@ -905,9 +891,6 @@ always_ff @(posedge clk) begin
                 endcase
             end
             endcase
-            // memory
-            stasrc_o <= `STA_SRC_CACHE;
-            stdsrc_o <= `STD_SRC_CACHE;
         end
         endcase
         default: begin // no memory access operations
@@ -991,8 +974,6 @@ always_ff @(posedge clk) begin
                 irep_o <= `LEV_L;
             end
             endcase
-            // memory
-            memce_o <= `LEV_L;
         end
         endcase
     end else if ((opcode_w > LSO_BEGIN) && (opcode_w < LSO_END)) begin
@@ -1015,8 +996,6 @@ always_ff @(posedge clk) begin
                 alures_o  <= `ALU_RES_PAS;
                 wbe_o   <= `LEV_H;
                 waddr_o <= conflict_r;
-                // memory
-                memce_o <= `LEV_L;
                 // branch
                 bsrc_o <= `BRANCH_SRC_EPC;
                 // internals
@@ -1028,8 +1007,6 @@ always_ff @(posedge clk) begin
                 alures_o  <= `ALU_RES_PAS;
                 wbe_o   <= `LEV_H;
                 waddr_o <= conflict_r;
-                // memory
-                memce_o <= `LEV_L;
                 // branch
                 bsrc_o <= `BRANCH_SRC_EPC;
                 // internals
@@ -1037,13 +1014,14 @@ always_ff @(posedge clk) begin
             end
             default: begin // execute memory access operations
                 // regfiles
-                raddr1_o  <= rb_w;
                 imm_o     <= imm_w;
                 alusrca_o <= `ALU_SRC_R1;
                 alures_o  <= `ALU_RES_ADD;
                 wbe_o <= `LEV_L;
+                cache_o <= `LEV_H;
                 case (opcode_w)
                 LH: begin
+                    raddr1_o  <= rb_w;
                     // memory
                     memce_o <= `LEV_L;
                     memod_o <= `MEM_OPND_HALF;
@@ -1053,6 +1031,7 @@ always_ff @(posedge clk) begin
                     conflict_r <= ra_w;
                 end
                 LHU: begin
+                    raddr1_o  <= rb_w;
                     // memory
                     memce_o <= `LEV_L;
                     memod_o <= `MEM_OPND_HALFU;
@@ -1062,6 +1041,7 @@ always_ff @(posedge clk) begin
                     conflict_r <= ra_w;
                 end
                 LB: begin
+                    raddr1_o  <= rb_w;
                     // memory
                     memce_o <= `LEV_L;
                     memod_o <= `MEM_OPND_BYTE;
@@ -1071,6 +1051,7 @@ always_ff @(posedge clk) begin
                     conflict_r <= ra_w;
                 end
                 LBU: begin
+                    raddr1_o  <= rb_w;
                     // memory
                     memce_o <= `LEV_L;
                     memod_o <= `MEM_OPND_BYTEU;
@@ -1080,6 +1061,7 @@ always_ff @(posedge clk) begin
                     conflict_r <= ra_w;
                 end
                 POP: begin
+                    raddr1_o  <= `REG_SP;
                     // memory
                     memce_o <= `LEV_L;
                     memod_o <= `MEM_OPND_WORD;
@@ -1090,6 +1072,7 @@ always_ff @(posedge clk) begin
                 end
                 SW: begin
                     raddr0_o  <= ra_w;
+                    raddr1_o  <= rb_w;
                     // memory
                     memce_o <= `LEV_H;
                     memod_o <= `MEM_OPND_WORD;
@@ -1100,6 +1083,7 @@ always_ff @(posedge clk) begin
                 end
                 SH: begin
                     raddr0_o  <= ra_w;
+                    raddr1_o  <= rb_w;
                     // memory
                     memce_o <= `LEV_H;
                     memod_o <= `MEM_OPND_HALF;
@@ -1110,6 +1094,7 @@ always_ff @(posedge clk) begin
                 end
                 SB: begin
                     raddr0_o  <= ra_w;
+                    raddr1_o  <= rb_w;
                     // memory
                     memce_o <= `LEV_H;
                     memod_o <= `MEM_OPND_BYTE;
@@ -1120,6 +1105,7 @@ always_ff @(posedge clk) begin
                 end
                 PUSH: begin
                     raddr0_o  <= ra_w;
+                    raddr1_o  <= `REG_SP;
                     // memory
                     memce_o <= `LEV_H;
                     memod_o <= `MEM_OPND_WORD;
@@ -1130,6 +1116,7 @@ always_ff @(posedge clk) begin
                 end
                 SET: begin
                     raddr0_o  <= ra_w;
+                    raddr1_o  <= rb_w;
                     // memory
                     memce_o <= `LEV_H;
                     memod_o <= `MEM_OPND_SETIO;
@@ -1139,6 +1126,7 @@ always_ff @(posedge clk) begin
                     conflict_r <= `REG_ADDR_WIDTH'd0;
                 end
                 default: begin // lw $ra, imm16($rb)
+                    raddr1_o  <= rb_w;
                     // memory
                     memce_o <= `LEV_L;
                     memod_o <= `MEM_OPND_WORD;
@@ -1148,8 +1136,6 @@ always_ff @(posedge clk) begin
                     conflict_r <= ra_w;
                 end
                 endcase
-                stasrc_o <= `STA_SRC_ALU;
-                stdsrc_o <= `STD_SRC_DATA0;
                 // branch
                 bsrc_o <= `BRANCH_SRC_NOOP;
                 // internals
@@ -1159,6 +1145,7 @@ always_ff @(posedge clk) begin
             endcase
         end
         default: begin // memory access operation is running
+            cache_o <= `LEV_L;
             case (ls_op_r)
             `MEM_POP: begin
                 // regfiles
@@ -1183,8 +1170,6 @@ always_ff @(posedge clk) begin
                 wbe_o <= `LEV_L;
             end
             endcase
-            stasrc_o <= `STA_SRC_CACHE;
-            stdsrc_o <= `STD_SRC_CACHE;
             // branch
             bsrc_o <= `BRANCH_SRC_EPC;
             // internals
@@ -1193,13 +1178,14 @@ always_ff @(posedge clk) begin
         endcase
         default: begin // execute memory access operations
             // regfiles
-            raddr1_o  <= rb_w;
             imm_o     <= imm_w;
             alusrca_o <= `ALU_SRC_R1;
             alures_o  <= `ALU_RES_ADD;
             wbe_o <= `LEV_L;
+            cache_o <= `LEV_H;
             case (opcode_w)
             LH: begin
+                raddr1_o  <= rb_w;
                 // memory
                 memce_o <= `LEV_L;
                 memod_o <= `MEM_OPND_HALF;
@@ -1209,6 +1195,7 @@ always_ff @(posedge clk) begin
                 conflict_r <= ra_w;
             end
             LHU: begin
+                raddr1_o  <= rb_w;
                 // memory
                 memce_o <= `LEV_L;
                 memod_o <= `MEM_OPND_HALFU;
@@ -1218,6 +1205,7 @@ always_ff @(posedge clk) begin
                 conflict_r <= ra_w;
             end
             LB: begin
+                raddr1_o  <= rb_w;
                 // memory
                 memce_o <= `LEV_L;
                 memod_o <= `MEM_OPND_BYTE;
@@ -1227,6 +1215,7 @@ always_ff @(posedge clk) begin
                 conflict_r <= ra_w;
             end
             LBU: begin
+                raddr1_o  <= rb_w;
                 // memory
                 memce_o <= `LEV_L;
                 memod_o <= `MEM_OPND_BYTEU;
@@ -1236,6 +1225,7 @@ always_ff @(posedge clk) begin
                 conflict_r <= ra_w;
             end
             POP: begin
+                raddr1_o  <= `REG_SP;
                 // memory
                 memce_o <= `LEV_L;
                 memod_o <= `MEM_OPND_WORD;
@@ -1246,6 +1236,7 @@ always_ff @(posedge clk) begin
             end
             SW: begin
                 raddr0_o <= ra_w;
+                raddr1_o  <= rb_w;
                 // memory
                 memce_o <= `LEV_H;
                 memod_o <= `MEM_OPND_WORD;
@@ -1256,6 +1247,7 @@ always_ff @(posedge clk) begin
             end
             SH: begin
                 raddr0_o <= ra_w;
+                raddr1_o  <= rb_w;
                 // memory
                 memce_o <= `LEV_H;
                 memod_o <= `MEM_OPND_HALF;
@@ -1266,6 +1258,7 @@ always_ff @(posedge clk) begin
             end
             SB: begin
                 raddr0_o <= ra_w;
+                raddr1_o  <= rb_w;
                 // memory
                 memce_o <= `LEV_H;
                 memod_o <= `MEM_OPND_BYTE;
@@ -1276,6 +1269,7 @@ always_ff @(posedge clk) begin
             end
             PUSH: begin
                 raddr0_o <= ra_w;
+                raddr1_o  <= `REG_SP;
                 // memory
                 memce_o <= `LEV_H;
                 memod_o <= `MEM_OPND_WORD;
@@ -1286,6 +1280,7 @@ always_ff @(posedge clk) begin
             end
             SET: begin
                 raddr0_o <= ra_w;
+                raddr1_o  <= rb_w;
                 // memory
                 memce_o <= `LEV_H;
                 memod_o <= `MEM_OPND_SETIO;
@@ -1295,6 +1290,7 @@ always_ff @(posedge clk) begin
                 conflict_r <= `REG_ADDR_WIDTH'd0;
             end
             default: begin // lw $ra, imm16($rb)
+                raddr1_o  <= rb_w;
                 // memory
                 memce_o <= `LEV_L;
                 memod_o <= `MEM_OPND_WORD;
@@ -1304,8 +1300,6 @@ always_ff @(posedge clk) begin
                 conflict_r <= ra_w;
             end
             endcase
-            stasrc_o <= `STA_SRC_ALU;
-            stdsrc_o <= `STD_SRC_DATA0;
             // branch
             bsrc_o <= `BRANCH_SRC_NOOP;
             // internals
@@ -1328,6 +1322,7 @@ always_ff @(posedge clk) begin
         alures_o <= `ALU_RES_ADD;
         irep_o <= `LEV_L;
         bsrc_o <= `BRANCH_SRC_EPC;
+        cache_o <= `LEV_L;
         // internal signals
         conflict_r <= `REG_ZERO;
         ls_busy_r <= `LEV_L;
